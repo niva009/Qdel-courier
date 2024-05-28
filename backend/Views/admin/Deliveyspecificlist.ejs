@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Specific User List</title>
+</head>
+<body>
+
+    <h1>User Details</h1>
+    <div id="user-details">
+        <p id="name">Name: </p>
+        <p id="email">Email: </p>
+        <p id="phone_number">Password: </p>
+        <p id="address">Phone Number: </p>
+        <p id="license_number">license_number: </p>
+    </div>
+    <script>
+        // Fetch user details from API
+        fetch(`/api/delivery/${userId}`)
+            .then(response => response.json())
+            .then(data => {
+                // Update HTML content with user details
+                document.getElementById('name').innerText += data.name;
+                document.getElementById('email').innerText += data.email;
+                document.getElementById('password').innerText += data.password;
+                document.getElementById('phone-number').innerText += data.phone_number;
+            })
+            .catch(error => console.error('Error fetching user details:', error));
+    </script>
+    
+</body>
+</html>

@@ -1,0 +1,49 @@
+NearestLocation.css
+
+.container {
+    padding: 20px;
+    max-width: 600px;
+    margin: 0 auto;
+    text-align: center;
+    background-color: #f9f9f9;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  }
+  
+  .title {
+    margin-bottom: 20px;
+    font-size: 18px;
+    color: #333;
+  }
+  
+  select {
+    height: 49px;
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 16px;
+    background-color: #fff;
+    transition: border-color 0.3s ease-in-out;
+  }
+  
+  select:hover {
+    border-color: #007bff;
+  }
+  
+  select:focus {
+    border-color: #007bff;
+    outline: none;
+    box-shadow: 0 0 5px rgba(0, 123, 255, 0.25);
+  }
+  
+  option {
+    padding: 10px;
+    border-bottom: 1px solid #ddd;
+  }
+  
+  .error {
+    margin-top: 20px;
+    color: red;
+  }
+  
