@@ -2,6 +2,11 @@ const express = require('express')
 const BusinessRouter = express.Router();
 const BusinessDb = require('../models/BusinessCourierModal')
 const axios = require('axios');
+const ChargeDb = require('../models/ChargeModal')
+const multer = require('multer');
+const path = require('path');
+const fs = require('fs');
+const Tesseract = require('tesseract.js');
 
 
 
@@ -305,17 +310,6 @@ BusinessRouter.put('/updateinvoice/:id', (req, res) => {
 BusinessRouter.post('/date-location/:id', (req, res) => {
     const id = req.params.id;
     const nearestLocation = req.body.nearestLocation;
-    const pickupDate = req.body.pickupDate; // Ensure the case matches exactly
-
-    // Validate and format the date (if necessary)
-    const isValidDate = (date) => {
-        const regex = /^\d{2}\/\d{2}\/\d{4}$/;
-        return regex.test(date);
-    };
-
-    if (!isValidDate(pickupDate)) {
-        return res.status(400).json({ message: "Invalid date format. Expected DD/MM/YYYY.", success: false, error: true });
-    }
 
     BusinessDb.findById(id)
         .then(data => {
@@ -325,7 +319,6 @@ BusinessRouter.post('/date-location/:id', (req, res) => {
 
             // Update the nearestLocation and pickupDate keys
             data.Invoice.nearestLocation = nearestLocation;
-            data.Invoice.pickupDate = pickupDate;
 
             console.log("Updated Invoice: ", data.Invoice); // Log to verify
 
@@ -341,8 +334,108 @@ BusinessRouter.post('/date-location/:id', (req, res) => {
         });
 });
 
-module.exports = BusinessRouter;
+BusinessRouter.post('/pickupdate/:id', (req, res) => {
+    const id = req.params.id;
+    const selectedDate = req.body.pickupDate;
+    const smsCharge = req.body.smsCharge;
+    const pickupCharge = req.body.pickupCharge;
+    const extraSecurityCharge = req.body.extraSecurityCharge;
+    const invoiceDate = req.body.invoiceDate;
 
+    BusinessDb.findById(id)
+        .then(data => {
+            if (!data) {
+                return res.status(404).json({ message: 'Object not found', success: false, error: true });
+            }
+
+            // Ensure Invoice field is initialized
+            if (!data.Invoice) {
+                data.Invoice = {
+                    pickupDate: '',
+                    smsCharge: '',
+                    invoiceDate:'',
+                    pickupCharge: '',
+                    extraSecurityCharge: ''
+                };
+            }
+
+            data.Invoice.pickupDate = selectedDate;
+            data.Invoice.smsCharge = smsCharge;
+            data.Invoice.extraSecurityCharge = extraSecurityCharge;
+            data.Invoice.pickupCharge = pickupCharge;
+            data.Invoice.invoiceDate = invoiceDate;
+
+            return data.save();
+        })
+        .then(updatedData => {
+            res.status(200).json({ message: "Pickup date updated successfully", success: true, error: false, data: updatedData });
+        })
+        .catch(error => {
+            console.error("Error saving data: ", error);
+            res.status(500).json({ message: "Internal server error", success: false, error: true });
+        });
+});
+
+BusinessRouter.put('/changeCharge', async(req,res) =>{
+
+    try{
+
+        const { pricePerKm,PricePerKg,pricePerVolume,expressStandardMultiplier,expressPremiumMultiplier} = req.body;
+
+        const UpdateData ={pricePerKm,PricePerKg ,pricePerVolume,expressStandardMultiplier,expressPremiumMultiplier}
+        const result = await ChargeDb.findOneAndUpdate({},UpdateData,{ new:true, upsert: true})
+        res.status(200).json({
+            success: true,
+            message: 'Prices updated successfully',
+            data: result
+        });
+    }
+    catch(error){
+        console.log(error,"error in charge update");
+        res.status(400).json({ success:false,message:'error occeared in updating charge information',error:error.message})
+    }
+
+})
+
+const storage = multer.diskStorage({
+    destination: function (req, file, cb) {
+        cb(null, path.join(__dirname, 'public/card/'));
+    },
+    filename: function (req, file, cb) {
+        cb(null, file.fieldname + '-' + Date.now() + path.extname(file.originalname));
+    }
+  });
+  
+  const upload = multer({ storage: storage });
+  
+  
+  BusinessRouter.post('/image-processing',upload.array('uploadedimages', 2), async( req,res) =>{
+  
+    const files = req.files;
+  
+    if(!files || files.length !== 2) {
+      return res.status(400).json({message:" must upload front and back portion of image", success:false, error:true})
+    } 
+  
+    try {
+      const ocrResults = await Promise.all(files.map(file => {
+          return Tesseract.recognize(file.path, 'eng', {
+              logger: m => console.log(m)
+          }).then(result => {
+              // Optionally delete the uploaded file after processing
+              fs.unlinkSync(file.path);
+              return result.data.text;
+          });
+      }));
+  
+      res.status(200).json({
+          message: 'OCR processing complete',
+          data: ocrResults
+      });
+  } catch (error) {
+      res.status(500).json({ error: error.message });
+  }
+  })
 
 
 module.exports = BusinessRouter;

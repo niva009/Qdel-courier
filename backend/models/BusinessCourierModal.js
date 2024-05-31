@@ -28,7 +28,10 @@ const BillingDetails = new Schema({
     pickupDate:{ type:String, require:true},
     smsCharge:{ type:String, require:true},
     pickupCharge:{ type:String, require:true},
-    securityCharge:{ type:String, require:true},
+    extraSecurityCharge:{ type:String, require:true},
+    invoiceNumber:{ type:String, require:true},
+    invoiceDate:{ type:String,require:true},
+    trackingNumber:{type:String, require: true}
 })
 
 

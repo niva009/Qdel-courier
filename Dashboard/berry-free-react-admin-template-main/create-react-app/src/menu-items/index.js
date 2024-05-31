@@ -4,6 +4,7 @@ import utilities from './utilities';
 import DeliveryMenu from './deliverymenu';
 import Deliverydashboard from './DeliveryDashboardmenu/Deliverydashboard';
 import Warehouse from './Warehouse/index';
+import PricingUpdation from './PriceUpdation/pricingUpdation' 
 
 // ==============================|| MENU ITEMS ||============================== //
 
@@ -24,7 +25,7 @@ if (userRole === '3') {
   };
 } else {
   menuItems = {
-    items: [dashboard, pages, Deliverydashboard, DeliveryMenu, Warehouse, utilities]
+    items: [dashboard, pages, Deliverydashboard, DeliveryMenu, Warehouse, utilities,PricingUpdation]
   };
 }
 

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import {
   MDBCard,
   MDBCardBody,
@@ -10,55 +10,112 @@ import {
   MDBTooltip
 } from "mdb-react-ui-kit";
 import NavbarOne from "../NavbarOne";
+import axios from 'axios';
 
 
 export default function Bill() {
 
-    const handlePayment = async () => {
-        // Your backend should create an order and return the order_id
-        const response = await fetch('http://localhost:3001/api/create-order', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          }
+  const [data, setData] = useState('');
+  const[priceDetail,setPriceDetail] = useState({
+
+    pickupCharge: 0,
+    smsCharge:0,
+    totalPrice:0,
+    extraSecurityCharge:0,
+  });
+
+  useEffect(() => {
+    const storedData = localStorage.getItem('FormId');
+    if (storedData) {
+      const data = JSON.parse(storedData);
+      if (data && data.formId) {
+        console.log(data.formId);
+        setData(data.formId) // Use the stored form ID
+      } else {
+        console.error("formId not found in the stored data");
+      }
+    } else {
+      console.error("No data found in localStorage for key 'FormId'");
+    }
+  }, []);
+
+  useEffect(() => {
+    if (data) {
+      axios.get(`http://localhost:3001/api/getAddressData/${data}`)
+        .then((response) => {
+          setPriceDetail(response.data.data[0].Invoice);
+
+        })
+        .catch((error) => {
+          console.log('error', error);
         });
-        const order = await response.json();
-    
-        const options = {
-          key: 'rzp_test_BhVKMS8PUhgik3', // Enter the Key ID generated from the Dashboard
-          amount: order.amount, // Amount is in currency subunits (e.g., paise for INR)
-          currency: order.currency,
-          name: 'Qdel Courier Service',
-          description: 'Test Transaction',
-          order_id: order.id,
-          handler: function (response) {
-            // This function handles the payment success response
-            alert(`Payment successful! Payment ID: ${response.razorpay_payment_id}`);
-          },
-          prefill: {
-            name: 'Your Name',
-            email: 'your.email@example.com',
-            contact: '9999999999'
-          },
-          notes: {
-            address: 'Corporate Office'
-          },
-          theme: {
-            color: '#3399cc'
-          }
-        };
-    
-        const rzp = new window.Razorpay(options);
-        rzp.open();
+    }
+  }, [data]); 
+
+  console.log(priceDetail,"price detailss");
+
+  
+
+  const handlePayment = async () => {
+    try {
+      // Your backend should create an order and return the order_id
+      const response = await fetch(`http://localhost:3001/api/create-order/${data}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      });
+  
+      if (!response.ok) {
+        throw new Error('Failed to create order');
+      }
+  
+      const order = await response.json();
+  
+      // Ensure order object has the correct amount
+      if (!order.amount || typeof order.amount !== 'number' || order.amount < 100) {
+        throw new Error('Invalid order amount received');
+      }
+  
+      const options = {
+        key: 'rzp_test_QUfWalFEmI7V4R', // Enter the Key ID generated from the Dashboard
+        amount: order.amount, // Amount is in currency subunits (e.g., paise for INR)
+        currency: order.currency,
+        name: 'Your Company Name',
+        description: 'Test Transaction',
+        order_id: order.id,
+        handler: function (response) {
+          // This function handles the payment success response
+          alert(`Payment successful! Payment ID: ${response.razorpay_payment_id}`);
+        },
+        prefill: {
+          name: 'Qdel india private limited',
+          email: 'qdelindia@gmail.com',
+          contact: '9999999999'
+        },
+        notes: {
+          address: 'Corporate Office'
+        },
+        theme: {
+          color: '#3399cc'
+        }
       };
+  
+      const rzp = new window.Razorpay(options);
+      rzp.open();
+    } catch (error) {
+      console.error('Error initiating payment:', error);
+      alert('Something went wrong. Please try again.');
+    }
+  };
   const serviceCharges = [
-    { name: 'Qdel Courier Charge', price: 8350 },
-    // { name: 'SMS Charge', price: 50 },
-    // { name: 'Extra Protection Charge', price: 200 },
-    // { name: 'Pickup Charge', price: 300 },
+    { name: 'qdel service Charge', price: priceDetail.totalPrice},
+    { name: 'SMS Charge', price: priceDetail.smsCharge },
+    { name: 'Extra Protection Charge', price: priceDetail.extraSecurityCharge },
+    { name: 'Pickup Charge', price: priceDetail.pickupCharge },
   ];
 
-  const totalAmount = serviceCharges.reduce((total, charge) => total + charge.price, 0);
+  const totalAmount = serviceCharges.reduce((total, charge) => total + parseFloat(charge.price), 0);
 
   const boxStyle = {
     backgroundColor: '#fff',
@@ -97,8 +154,7 @@ export default function Bill() {
                       
                     </div>
                     <div className="d-flex align-items-center">
-                      <sup className="dollar font-weight-bold text-muted">$</sup>
-                      <span className="h4 mx-1 mb-0">{charge.price}</span>
+                      <span className="h4 mx-1 mb-0">{charge.price} Rs</span>
                     </div>
                   </div>
                 ))}
@@ -118,13 +174,6 @@ export default function Bill() {
               <div className="mt-5">
                 <h4>Payment details</h4>
                 <h6 className="mt-4 mb-3 text-primary text-uppercase">Total Payable Amount {totalAmount} Rs</h6>
-                <MDBInput
-                  label="Email address"
-                  id="form3"
-                  size="lg"
-                  type="email"
-                  className="mb-3"
-                />
                 <MDBTooltip tag="span" title="Enter a valid email address for payment details" placement="right">
                   <MDBIcon icon="info-circle" className="text-primary ms-2" />
                 </MDBTooltip>

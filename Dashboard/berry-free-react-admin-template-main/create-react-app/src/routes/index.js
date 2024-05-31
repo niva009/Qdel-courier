@@ -6,9 +6,10 @@ import AuthenticationRoutes from './AuthenticationRoutes';
 import DeliveryAdminRotes from './DelveryAdminRoutes';
 import DeliveryOrder from './DeliveryPartnerDashboard/DliveryOrder';
 import Warehouse from './Warehouse'
+import PriceUpdationRouter from './priceUpdationRouter'
 
 // ==============================|| ROUTING RENDER ||============================== //
 
 export default function ThemeRoutes() {
-  return useRoutes([MainRoutes, AuthenticationRoutes, DeliveryAdminRotes, DeliveryOrder, Warehouse]);
+  return useRoutes([MainRoutes, AuthenticationRoutes, DeliveryAdminRotes, DeliveryOrder, Warehouse,PriceUpdationRouter]);
 }

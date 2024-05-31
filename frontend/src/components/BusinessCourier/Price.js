@@ -18,7 +18,6 @@ import './Business.css'
 import DoorStep from './DoorStep';
 import NearestLocation from './NearesLocation';
 
-
 const FormGrid = styled(Grid)(() => ({
     display: 'flex',
     flexDirection: 'column',
@@ -392,7 +391,7 @@ function SimpleModal({ show, onHide, form }) {
 
 
 
-const Price = (props) =>{
+const Price = () =>{
     const [modalShow, setModalShow] = useState(false);
     const [productModal,setProductModal] =useState(false);
     const [form, setForm] = useState('');
@@ -413,13 +412,6 @@ const Price = (props) =>{
         estimated_rate:"",
     })
 
-    /////call back function to save location data////////
-    const handleSaveLocation = () => {
-        if (saveLocationCallback) {
-          saveLocationCallback();
-        }
-      };
-      
 
 /////////  foselection////////////////
     const handleButtonClick = (type) => {
@@ -522,18 +514,24 @@ const DateSelection = () => {
     if (formType === 'Doorstep') {
         return (
           <div>
-            <DoorStep/>
+            <DoorStep formId={form._id} />
         </div>
         );
     } else if (formType === 'NearestLocation') {
         return (
-            <NearestLocation district={form.from_district} objectId={form._id} onSaveLocation={handleSaveLocation} />
+            <NearestLocation district={form.from_district} formId={form._id} />
 
         );
     }
     return null;
 };
-
+useEffect(() => {
+    if (form && form._id) {
+      const data = { formId: form._id };
+      localStorage.setItem('FormId', JSON.stringify(data));
+    }
+  }, [form]);
+  
 
     return(
         <div>

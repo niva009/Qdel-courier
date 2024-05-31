@@ -4,7 +4,7 @@ import FormLabel from '@mui/material/FormLabel';
 import Grid from '@mui/material/Grid';
 import OutlinedInput from '@mui/material/OutlinedInput';
 import { styled } from '@mui/system';
-import { useState , useEffect } from 'react';
+import { useState , useEffect, startTransition} from 'react';
 import Button from '@mui/material/Button'; // Add this import
 import NavbarOne from '../NavbarOne';
 import { jwtDecode } from "jwt-decode";
@@ -20,6 +20,8 @@ import TableContainer from '@mui/material/TableContainer';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import Paper from '@mui/material/Paper';
+import { useNavigate} from "react-router-dom";
+import { MdCloudUpload } from "react-icons/md";
 
 
 
@@ -52,6 +54,8 @@ const FormGrid = styled(Grid)(() => ({
 
 
 const Form_1 = () =>{
+
+  const navigate = useNavigate();
 
     const [ token, setToken] = useState('') ;
       const[ error, setError] = useState({})
@@ -137,14 +141,22 @@ const Form_1 = () =>{
         }
       }, [])
 
-      const handleSubmit = (e) =>{
-        e.preventDefault()
-
-     axios.post('http://localhost:3001/api/getAllData/business', form)
-     .then(response =>{ console.log(response.data)})
-     .catch(error =>{ console.log( error)})
-
-      }
+      const handleSubmit = (e) => {
+        e.preventDefault();
+    
+        axios.post('http://localhost:3001/api/getAllData/business', form)
+          .then(response => {
+            console.log(response.data);
+            // Navigate to the shipment detail page inside the then block
+            startTransition(() => {
+              navigate('/shipmentdetail');
+            });
+          })
+          .catch(error => {
+            console.log(error);
+            setError(error);
+          });
+      };
 
       console.log(form,"form data storage");
       const saveFormData = () =>{
@@ -274,7 +286,8 @@ const Form_1 = () =>{
     <Grid container spacing={3} style={{ marginTop:'50px',padding:'80px 50px' ,paddingBottom:'50px'}}>
       <Grid item xs={12} md={6}>
         <div>
-          <FormLabel style={{ fontSize: '33px' }}>From</FormLabel>
+          <FormLabel style={{ fontSize: '33px' }}>From</FormLabel><button onClick={() => setLgShow(true)} style={{border:'none'}}><MdCloudUpload style={{color:'orange',fontSize:'1.5em'}}/></button> * Upload your Aaadhar card or identity card to automaticaly fill this field
+
           <FormGrid>
             <FormLabel htmlFor="first-name" required>
                Name
@@ -525,12 +538,30 @@ const Form_1 = () =>{
               required
             />
             <Button onClick={submitAddress}>Save this address to address book</Button>
-            <Button type="submit">Click me</Button>
+
           </FormGrid>
-        </div>
+        </div> 
       </Grid>
     </Grid>
-              
+    <Grid item xs={12}>
+          <Grid container justifyContent="center">
+            <Grid item>
+              <Button
+                type="submit"
+                onClick={handleSubmit}
+                style={{
+                  backgroundColor: 'orange',
+                  color: 'white',
+                  padding: '10px 40px',
+                  borderRadius: '5px',  
+                  marginBottom:'10px',
+                }}
+              >
+                Next
+              </Button>
+            </Grid>
+          </Grid>
+        </Grid>
     </form>
         </div>
     )   

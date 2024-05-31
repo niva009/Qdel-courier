@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import './Locationpicker.module.css';
 
-const NearestLocation = ({ setOnSaveLocation, objectId, district }) => {
+const NearestLocation = ({ formId, district }) => {
   const [districtData, setDistrictData] = useState([]);
   const [error, setError] = useState(null);
   const [location, setLocation] = useState({ nearestLocation: "" });
@@ -30,42 +30,39 @@ const NearestLocation = ({ setOnSaveLocation, objectId, district }) => {
     }
   }, [district]);
 
+
   const locationChange = (e) => {
     const { value } = e.target;
     setLocation({ nearestLocation: value });
   };
 
-  const saveLocation = () => {
-    if (objectId && location.nearestLocation) {
+  console.log(location,"location data aareee")
 
-      console.log('object id',objectId);
-      axios.post(`http://localhost:3001/api/date-location/${objectId}`, location)
-        .then(response => {
-          console.log("Location data updated successfully", response);
-        })
-        .catch(error => {
-          console.error('Update error:', error);
-        });
-    } else {
-      console.error('No location selected or missing objectId');
-    }
-  };
+  const handleSubmit = () =>{
 
-  useEffect(() => {
-    if (setOnSaveLocation) {
-      setOnSaveLocation(() => saveLocation);
-    }
-  }, [setOnSaveLocation, location]);
+    axios.post(`http://localhost:3001/api/date-location/${formId}`,location)
+
+    .then((response) =>{
+      console.log(response.data,"resposne data aareee")
+    })
+    .catch(error =>{
+      console.log(error,"error saving data")
+    })
+  }
+
 
   return (
     <div className="container">
-      <h5 className="title">Select Nearest Location</h5>
+      <h5   style={{margin:"30px 0px",}} className="title">Select Nearest Location</h5>
       <div>
         <select onChange={locationChange}>
           {districtData && districtData.length > 0 ? (
             districtData.map((loc, index) => (
               <option key={index} value={loc.name}>
                 {loc.name}
+                {loc.address}
+                {loc.phone_number},
+                {loc.district},
               </option>
             ))
           ) : (
@@ -74,6 +71,12 @@ const NearestLocation = ({ setOnSaveLocation, objectId, district }) => {
         </select>
       </div>
       {error && <p>{error}</p>}
+
+      <button 
+        style={{ margin: "50px 0px", padding: '10px 60px', border: 'none', background: 'orange', color: 'white' }}
+        onClick={handleSubmit} >
+        Next
+      </button>
     </div>
   );
 };

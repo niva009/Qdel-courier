@@ -1,5 +1,5 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { lazy } from "react";
+import { lazy } from 'react';
 import HomeOne from "./pages/HomeOne";
 import 'bootstrap/dist/css/bootstrap.min.css';
 import AOS from "aos";
@@ -36,9 +36,14 @@ import Orderhistory from './components/Orderhistory'
 import Example from './components/Example'
 import OrderTracking from './components/OrderTracking'
 import Test from './components/Test'
-import BusinessCourier from './components/BusinessCourier/BusinessCourier'
 import Price from './components/BusinessCourier/Price'
 import Bill from './components/BusinessCourier/BillPage'
+const Form_1 = lazy(() => import('./components/BusinessCourier/Form_1'));
+const ShipmentDetail = lazy(() => import('./components/BusinessCourier/ShipmentDetail'));
+const BusinessPdf = lazy(() => import('./components/Pdf/BusinessInvoicePdf'))
+const BusinessQrcodePdf = lazy(() => import('./components/Pdf/BusinessQrcodePdf'))
+const FinalInvoice = lazy(() => import('./components/BusinessCourier/invoiceDownload'))
+
 
 
 
@@ -84,13 +89,17 @@ function App() {
         <Route exact path='/pdfqrcode/:id' element={< QrcodePdf/>} />
         <Route exact path='/review' element={< Review/>} />
         <Route exact path='/invoicepdf/:id' element={<InvoicePdf />} />
+        <Route exact path='/pdfinvoice/:id' element={<BusinessPdf />} />
+      <Route exact path='/qrcodepdf/:id' element={<BusinessQrcodePdf />} />///////business form/////////
         <Route exact path='/orderhistory' element={< Orderhistory/>} />
         <Route exact path='/example' element={< Example/>} />
         <Route exact path='/tracking/:id' element={< OrderTracking/>} />
         <Route exact path='/test' element={< Test/>} />
-        <Route exact path="/business-courier" element={<BusinessCourier/>} />
+        <Route exact path="/business-courier" element={<Form_1/>} />
         <Route exact path="/price" element={<Price/>} />
         <Route exact path="/billing" element={<Bill/>} />
+        <Route exact path="/shipmentdetail" element={<ShipmentDetail/>} />
+        <Route exact path="/downloadinvoice" element={<FinalInvoice/>} />
       </Routes>
       <ScrollToTop smooth color='#FA43ss18' />  
     </BrowserRouter>

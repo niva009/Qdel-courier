@@ -92,7 +92,9 @@ App.use( '/api/', BusinessRouter);////////for Updatating locationinformation  ht
 App.use( '/api/', BusinessRouter);/////////////for get price detail ////////////////
 App.use( '/api/', BusinessRouter);///////////////to update billing details http://localhost:3001/api/updateinvoice/id
 App.use( '/api/', BusinessRouter);//////////to store nerest location and pickup date http://localhost:3001/api/date-location/id
-App.use( '/api/', PaymentRouter);
+App.use( '/api/', PaymentRouter);/////////////for payment integration/////////////////////////
+App.use( '/api/', BusinessRouter); /////// http://localhost:3001/api/pckupdate/id    for saving data and curesponsing charge
+App.use( '/api/', BusinessRouter);///////http://localhost:3001/api/changeCharge/
 App.listen(port, () => {
     console.log(`server running on port ${port}`);
 });

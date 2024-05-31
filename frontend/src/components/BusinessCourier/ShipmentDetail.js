@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect , startTransition} from 'react';
 import NavbarOne from '../NavbarOne';
 import Container from 'react-bootstrap/Container';
 import Row from 'react-bootstrap/Row';
@@ -14,6 +14,7 @@ import {jwtDecode} from "jwt-decode";
 import './Business.css';
 import { Box, Typography, Tooltip, IconButton, TextField, Select, MenuItem, FormControl, InputLabel } from '@mui/material';
 import InfoIcon from '@mui/icons-material/Info';
+import { useNavigate } from 'react-router-dom';
 
 
 const FormGrid = styled(Grid)(() => ({
@@ -235,6 +236,7 @@ const ShipmentDetails = () => {
     const [userId, setUserId] = useState('');
     const [formType, setFormType] = useState('Packages');
     const [activeButton, setActiveButton] = useState('Packages');
+    const navigate = useNavigate();
     const [ location, setLocation] =useState({
         fromlon:"",
         fromlat:"",
@@ -348,6 +350,10 @@ const ShipmentDetails = () => {
 
         .then(response =>{
             console.log(response.data)
+
+            startTransition(() => {
+                navigate('/price');
+              });
         })
         .catch(error =>{
             console.log(error)

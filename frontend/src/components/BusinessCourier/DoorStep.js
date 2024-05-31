@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState ,useEffect, startTransition} from 'react';
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import styles from "./Datepicker.module.css"; // Import the CSS module
@@ -7,11 +7,42 @@ import FormControlLabel from '@mui/material/FormControlLabel';
 import Checkbox from '@mui/material/Checkbox';
 import Typography from '@mui/material/Typography';
 import Box from '@mui/material/Box';
+import axios from 'axios'
+import {useNavigate} from 'react-router-dom';
 
+
+function getCurrentDate(separator=''){
+
+  let newDate = new Date()
+  let date = newDate.getDate();
+  let month = newDate.getMonth() + 1;
+  let year = newDate.getFullYear();
+  
+  return `${date}${separator}${month<10?`0${month}`:`${month}`}${separator}${year}`
+  }
 const DoorStep = () => {
   const [selectDate, setSelectedDate] = useState(new Date());
   const [smsCharge, setSmsCharge] = useState(false);
   const [extraSecurity, setExtraSecurity] = useState(false);
+  const [formId,setFormId] = useState('')
+
+  const navigate = useNavigate();
+
+  useEffect(() => {
+
+    const storedData = localStorage.getItem('FormId');
+    if (storedData) {
+      const data = JSON.parse(storedData);
+      if (data && data.formId) {
+        console.log(data.formId);
+        setFormId(data.formId) // Use the stored form ID
+      } else {
+        console.error("formId not found in the stored data");
+      }
+    } else {
+      console.error("No data found in localStorage for key 'FormId'");
+    }
+  }, []);
 
   const handleChange = (date) => {
     setSelectedDate(date);
@@ -26,22 +57,26 @@ const DoorStep = () => {
     }
   };
 
+
   const handleSubmit = async () => {
+
     const data = {
-      selectDate,
+      pickupDate:selectDate,
+      invoiceDate:getCurrentDate('-'),
       pickupCharge: 100,
       smsCharge: smsCharge ? 50 : 0,
       extraSecurityCharge: extraSecurity ? 150 : 0,
     };
 
+
+
     try {
-      const response = await fetch('/api/save-data', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(data),
-      });
+      const response = await axios.post(`http://localhost:3001/api/pickupdate/${formId}`, data)
+     console.log(response.data);
+
+     startTransition(() => {
+      navigate('/billing');
+    });
 
       if (!response.ok) {
         throw new Error('Network response was not ok');
@@ -55,6 +90,8 @@ const DoorStep = () => {
       // Handle error (e.g., show an error message)
     }
   };
+
+  console.log(formId,"door step id");
 
   return (
     <div>
