@@ -113,17 +113,6 @@ function SimpleModal({ show, onHide, form }) {
                                             placeholder="123456"
                                             autoComplete="zipcode"
                                         />
-                                        <FormLabel htmlFor="from_city" required>City</FormLabel>
-                                        <OutlinedInput
-                                            id="from_city"
-                                            value={addressUpdate.from_city || ""}
-                                            name="from_city"
-                                            type="text"
-                                            onChange={handleInputChange}
-                                            placeholder="chennai"
-                                            autoComplete="City"
-                                            required
-                                        />
                                         <FormLabel style={{ marginTop: '20px' }} htmlFor="from_vat_id" required>Vat/Tax ID</FormLabel>
                                         <OutlinedInput
                                             value={addressUpdate.from_vat_id || ""}
@@ -190,17 +179,6 @@ function SimpleModal({ show, onHide, form }) {
                                             onChange={handleInputChange}
                                             placeholder="123456"
                                             autoComplete="zipcode"
-                                        />
-                                        <FormLabel htmlFor="to_city" required>City</FormLabel>
-                                        <OutlinedInput
-                                            value={addressUpdate.to_city || ""}
-                                            id="to_city"
-                                            name="to_city"
-                                            type="text"
-                                            onChange={handleInputChange}
-                                            placeholder="chennai"
-                                            autoComplete="City"
-                                            required
                                         />
                                         <FormLabel style={{ marginTop: '20px' }} htmlFor="to_vat_id" required>Vat/Tax ID</FormLabel>
                                         <OutlinedInput

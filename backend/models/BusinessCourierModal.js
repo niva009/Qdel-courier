@@ -31,7 +31,9 @@ const BillingDetails = new Schema({
     extraSecurityCharge:{ type:String, require:true},
     invoiceNumber:{ type:String, require:true},
     invoiceDate:{ type:String,require:true},
-    trackingNumber:{type:String, require: true}
+    trackingId:{ type:String,require:true},
+    status:{ type:String, default:'order created'},
+    paymentStatus:{ type:String, default:"payment success"}
 })
 
 
@@ -41,20 +43,16 @@ const BusinessCourier = new Schema ( {
     from_state: { type: String, require: true },
     from_address:{ type:String,require: true},
     from_zipcode: { type: String, require: true },
-    from_city: { type: String, require: true },
     from_district: { type: String, require: true }, 
-    from_vat_id: { type:String, require: true},   
-    from_eoriNumber: { type:String, require: true},  
+    from_vat_id: { type:String, require: true},    
     to_name: { type: String, require: true },
     to_phone_number: { type: String, require: true },
     to_address: { type: String, require: true },
     to_state: { type: String, require: true },
     to_zipcode: { type: String, require: true },
-    to_city: { type: String, require: true },
     to_district: { type: String, require: true },
     user_id: { type:String, require: true},   
     to_vat_id: { type:String, require: true},   
-    to_eoriNumber: { type:String, require: true}, 
     productionDescription: { type: ProductDescriptionSchema, require:true},
     Location:{ type:LocationDataSchema, require:true},
     Invoice:{ type:BillingDetails, require:true},

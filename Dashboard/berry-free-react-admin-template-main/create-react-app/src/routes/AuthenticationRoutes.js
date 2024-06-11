@@ -6,9 +6,11 @@ import MinimalLayout from 'layout/MinimalLayout';
 
 const UserList = Loadable(lazy(() => import('views/custmers/customerlist')));
 const Login = Loadable(lazy(() => import('views/Login/Login')));
+const TotalInvoice = Loadable(lazy(() => import('views/dashboard/Totalinvoice')));
 
 
 // ==============================|| AUTHENTICATION ROUTING ||============================== //
+//===============================//  CONTAING PAYMENT INFO FOR // =========================//
 
 const AuthenticationRoutes = {
   path: '/',
@@ -21,6 +23,10 @@ const AuthenticationRoutes = {
     {
       path: '/login',
       element: <Login />
+    },
+    {
+      path: '/totalInvoice',
+      element:<TotalInvoice/>
     }
   ]
 };

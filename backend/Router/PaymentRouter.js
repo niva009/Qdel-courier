@@ -29,7 +29,7 @@ PaymentRouter.post('/create-order/:id', async (req, res) => {
         const grandTotal = parseFloat(totalPrice) + parseFloat(smsCharge) + parseFloat(pickupCharge) + parseFloat(extraSecurityCharge);
 
         const options = {
-            amount: grandTotal * 100, // amount in smallest currency unit (e.g., paise for INR)
+            amount: Math.round(grandTotal * 100), // Convert to smallest currency unit and ensure it's an integer
             currency: 'INR',
             receipt: receiptId, // Using nanoid-generated unique receipt ID
             payment_capture: 1 // 1 for automatic capture, 0 for manual

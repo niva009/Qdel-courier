@@ -7,6 +7,7 @@ const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
 const Tesseract = require('tesseract.js');
+const StateDb = require('../models/StatePriceSchema')
 
 
 
@@ -18,20 +19,16 @@ BusinessRouter.post('/business', (req, res) => {
         from_state: req.body.from_state,
         from_address:req.body.from_address,
         from_zipcode: req.body.from_zipcode,
-        from_city: req.body.from_city,
         from_district: req.body.from_district,
         from_vat_id: req.body.from_vat_id,
-        from_eoriNumber: req.body.from_eoriNumber,
         to_name: req.body.to_name,
         to_phone_number: req.body.to_phone_number,
         to_state: req.body.to_state,
         to_address: req.body.to_address,
         to_zipcode: req.body.to_zipcode,
-        to_city: req.body.to_city,
         to_district: req.body.to_district,
         user_id: req.body.user_id,
         to_vat_id: req.body.to_vat_id,
-        to_eoriNumber: req.body.to_eoriNumber,
         ProductDescription:{
             length: req.body.length,
             weight: req.body.weight,
@@ -83,20 +80,15 @@ BusinessRouter.put('/addressUpdate/:id', (req, res) => {
         from_state: req.body.from_state,
         from_address: req.body.from_address,
         from_zipcode: req.body.from_zipcode,
-        from_city: req.body.from_city,
         from_district: req.body.from_district,
         from_vat_id: req.body.from_vat_id,
-        from_eoriNumber: req.body.from_eoriNumber,
         to_name: req.body.to_name,
         to_phone_number: req.body.to_phone_number,
         to_state: req.body.to_state,
         to_address: req.body.to_address,
-        to_zipcode: req.body.to_zipcode,
-        to_city: req.body.to_city,
         to_district: req.body.to_district,
         user_id: req.body.user_id,
         to_vat_id: req.body.to_vat_id,
-        to_eoriNumber: req.body.to_eoriNumber,
         content: req.body.content,
         
         ProductDescription:{
@@ -212,19 +204,20 @@ BusinessRouter.put('/updategeometric/:id', (req, res) => {
     });
 });
 
-BusinessRouter.get('/pricedetails/:id', async(req,res) =>{
-
-    try{
-    const id = req.params.id;
-   const geolocation = await BusinessDb.findOne({_id:id})
-   if (!geolocation) {
-    return res.status(404).json({ message: 'location data not found successfully', success: false, error:true
-     });
-
-   }
-
-    const apiKey = 'AIzaSyA7iwZvlrBjdkqB51xMCP76foKkIeqG8co';
-    const origin = `${geolocation.Location.fromlat},${geolocation.Location.fromlon}`;
+BusinessRouter.get('/pricedetails/:id', async (req, res) => {
+    try {
+      const id = req.params.id;
+      const geolocation = await BusinessDb.findOne({ _id: id });
+      if (!geolocation) {
+        return res.status(404).json({
+          message: 'location data not found successfully',
+          success: false,
+          error: true
+        });
+      }
+  
+      const apiKey = 'AIzaSyA7iwZvlrBjdkqB51xMCP76foKkIeqG8co';
+      const origin = `${geolocation.Location.fromlat},${geolocation.Location.fromlon}`;
       console.log(origin);
       const destination = `${geolocation.Location.tolat},${geolocation.Location.tolon}`;
       console.log(destination);
@@ -232,53 +225,67 @@ BusinessRouter.get('/pricedetails/:id', async(req,res) =>{
       const response = await axios.get(apiUrl);
       const distance = response.data.rows[0].elements[0].distance.text;
       const duration = response.data.rows[0].elements[0].duration.text;
-
+  
       geolocation.Location.Distance = distance;
       geolocation.Location.Duration = duration;
       await geolocation.save();
+  
+      let stateData = null;
+      if (geolocation.to_state) {
+        try {
+          const stateInfo = await axios.get(`http://localhost:3001/api/getstate/${geolocation.to_state}`);
+          stateData = stateInfo.data;
+        //   console.log(stateData,"state information");
+          console.log(stateData.data.basePricePerKm, "state data");
+        } catch (stateError) {
+          console.error('Error fetching state data:', stateError);
+          return res.status(500).json({ error: 'An error occurred while fetching state data' });
+        }
+      } else {
+        console.log("State data could not be fetched successfully");
+      }
 
-      const { standardPrice, expressStandardPrice, expressPremiumPrice } = calculatePrice(distance, geolocation.productionDescription);
+      const { standardPrice, expressStandardPrice, expressPremiumPrice } = calculatePrice(distance, geolocation.productionDescription, stateData);
       console.log('Distance:', distance);
       console.log('Duration:', duration);
-      res.json({ 
-        distance, 
-        duration, 
-        standardPrice, 
-        expressStandardPrice, 
-        expressPremiumPrice 
-    });
-
-}catch (error) {
-    console.error('Error fetching data:', error);
-    res.status(500).json({ error: 'An error occurred while fetching data' });
-}
-   
-})
-
-function calculatePrice(distance,productionDescription ) {
+      res.json({
+        distance,
+        duration,
+        standardPrice,
+        expressStandardPrice,
+        expressPremiumPrice
+      });
+  
+    } catch (error) {
+      console.error('Error fetching data:', error);
+      res.status(500).json({ error: 'An error occurred while fetching data' });
+    }
+  });
+  
+  function calculatePrice(distance, productionDescription, stateData) {
     const distanceInKm = parseFloat(distance.replace(' km', ''));
     const { weight, length, width, height } = productionDescription;
-
+  
     // Example pricing logic
-    const basePricePerKm = 1.0; // Base price per km for standard
-    const expressStandardMultiplier = 1.5; // Multiplier for express standard
-    const expressPremiumMultiplier = 2.0; // Multiplier for express premium
-
-    const weightFactor = 40; // Additional cost per kg
-    const volumeFactor = 0.1; // Additional cost per cubic meter (length*breadth*height)
-
+    const basePricePerKm = stateData.data.basePricePerKm; // Base price per km for standard
+    const expressStandardMultiplier = stateData.data.expressStandardMultiplier; // Multiplier for express standard
+    const expressPremiumMultiplier = stateData.data.expressPremiumMultiplier; // Multiplier for express premium
+  
+    const weightFactor = parseFloat(stateData.data.weightFactor); // Additional cost per kg
+    const volumeFactor = parseFloat(stateData.data.volumeFactor); // Additional cost per cubic meter (length*breadth*height)
+  
     const volume = length * width * height;
-
+  
     const standardPrice = (basePricePerKm * distanceInKm) + (weightFactor * weight) + (volumeFactor * volume);
     const expressStandardPrice = standardPrice * expressStandardMultiplier;
     const expressPremiumPrice = standardPrice * expressPremiumMultiplier;
-
+  
     return {
-        standardPrice: standardPrice.toFixed(2), 
-        expressStandardPrice: expressStandardPrice.toFixed(2), 
-        expressPremiumPrice: expressPremiumPrice.toFixed(2)
+      standardPrice: standardPrice.toFixed(2),
+      expressStandardPrice: expressStandardPrice.toFixed(2),
+      expressPremiumPrice: expressPremiumPrice.toFixed(2)
     }; // Return price with 2 decimal points
-}
+  }
 
 //////to store price and invoice details/////////////////////////////
 BusinessRouter.put('/updateinvoice/:id', (req, res) => {
@@ -397,45 +404,226 @@ BusinessRouter.put('/changeCharge', async(req,res) =>{
 
 })
 
+
+const uploadDir = path.join(__dirname, '/public/card/');
+if (!fs.existsSync(uploadDir)){
+    fs.mkdirSync(uploadDir, { recursive: true });
+}
+
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
-        cb(null, path.join(__dirname, 'public/card/'));
+        cb(null, uploadDir);
     },
     filename: function (req, file, cb) {
         cb(null, file.fieldname + '-' + Date.now() + path.extname(file.originalname));
     }
-  });
-  
-  const upload = multer({ storage: storage });
-  
-  
-  BusinessRouter.post('/image-processing',upload.array('uploadedimages', 2), async( req,res) =>{
-  
+});
+
+const upload = multer({ storage: storage });
+
+BusinessRouter.post('/image-processing', upload.array('uploadedImages', 2), async (req, res) => {
     const files = req.files;
-  
-    if(!files || files.length !== 2) {
-      return res.status(400).json({message:" must upload front and back portion of image", success:false, error:true})
-    } 
-  
+
+    if (!files || files.length !== 2) {
+        return res.status(400).json({ message: "must upload front and back portion of image", success: false, error: true });
+    }
+
     try {
-      const ocrResults = await Promise.all(files.map(file => {
-          return Tesseract.recognize(file.path, 'eng', {
-              logger: m => console.log(m)
-          }).then(result => {
-              // Optionally delete the uploaded file after processing
-              fs.unlinkSync(file.path);
-              return result.data.text;
-          });
-      }));
-  
-      res.status(200).json({
-          message: 'OCR processing complete',
-          data: ocrResults
-      });
-  } catch (error) {
-      res.status(500).json({ error: error.message });
-  }
-  })
+        const ocrResults = await Promise.all(files.map(file => {
+            return Tesseract.recognize(file.path, 'eng', {
+                logger: m => console.log(m)
+            }).then(result => {
+                // Optionally delete the uploaded file after processing
+                fs.unlinkSync(file.path);
+                return result.data.text;
+            });
+        }));
+
+        const { name, address, zipcode } = extractNameAndAddress(ocrResults);
+
+        res.status(200).json({
+            message: 'OCR processing complete',
+            success: true,
+            data: { name, address, zipcode }
+        });
+
+    } catch (error) {
+        res.status(500).json({ message: error.message, success: false });
+    }
+});
+
+function extractNameAndAddress(ocrResults) {
+    let name = ''; 
+    let address = '';
+    let zipcode = '';
+
+    // Extracting name
+    let nameRegex = /[A-Z][A-Za-z\s]+(?=\s*\|)/;// Assuming name format is Title Case and ends before a newline
+    let nameMatch = ocrResults[0].match(nameRegex);
+    if (nameMatch) {
+        name = nameMatch[0].trim();
+    }
+
+    // Extracting address
+    let addressRegex = /Address:\s([\s\S]+?)(\d{6})/; // Match any characters including newline until the 6-digit PIN code
+    let addressMatch = ocrResults[1].match(addressRegex);
+    if (addressMatch) {
+        address = addressMatch[1].trim();
+        zipcode = addressMatch[2].trim();
+    }
+
+    console.log("pincode data", zipcode);
+    return { name, address, zipcode };
+}
+
+
+BusinessRouter.put('/generateId/:id', async (req, res) => {
+    const id = req.params.id;
+    const { invoiceNumber, trackingId } = req.body;
+
+    if (!invoiceNumber && !trackingId) {
+        return res.status(400).json({
+            message: 'invoiceId and trackingId are null',
+            success: false,
+            error: true
+        });
+    }
+
+    try {
+        const updateFields = {};
+        if (invoiceNumber) updateFields['Invoice.invoiceNumber'] = invoiceNumber;
+        if (trackingId) updateFields['Invoice.trackingId'] = trackingId;
+
+        const updateData = await BusinessDb.findByIdAndUpdate(
+            id,
+            { $set: updateFields },
+            { new: true }
+        );
+
+        if (!updateData) {
+            return res.status(404).send('Business not found');
+        }
+
+        res.status(200).json({
+            message: "Updated successfully",
+            success: true,
+            error: false,
+            data:updateData,
+        });
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({
+            message: 'Internal server error',
+            success: false,
+            error: true
+        });
+    }
+});
+
+
+/////////// to get all data from business db////////////////////////////////////////////////
+
+BusinessRouter.get('/getallData',(req,res) =>{
+
+
+    BusinessDb.find()
+
+    .then(response =>{
+
+        return res.status(200).json({ message:"business data found successfully", success:true, error:false,data:response})
+    })
+   .catch(error =>{ 
+      res.status(400).json({ message:'data not found',success:true,error:false})
+   }) 
+})
+
+
+////////////////////////////////update specific State price from Admin Side/////////////////////////////////
+
+BusinessRouter.post('/state', async (req, res) => {
+    const { name, basePricePerKm, expressStandardMultiplier, expressPremiumMultiplier, weightFactor, volumeFactor } = req.body;
+
+    try {
+        let state = await StateDb.findOne({ name: name });
+        if (state) {
+            // If the state exists, update it
+            state.basePricePerKm = basePricePerKm;
+            state.expressStandardMultiplier = expressStandardMultiplier;
+            state.expressPremiumMultiplier = expressPremiumMultiplier;
+            state.weightFactor = weightFactor;
+            state.volumeFactor = volumeFactor;
+            state = await state.save();
+        } else {
+            // If the state does not exist, create a new one
+            state = new StateDb({
+                name,
+                basePricePerKm,
+                expressStandardMultiplier,
+                expressPremiumMultiplier,
+                weightFactor,
+                volumeFactor
+            });
+            state = await state.save();
+        }
+        res.status(200).json({ message: "State stored successfully", data: state, success: true, error: false });
+    } catch (error) {
+        res.status(500).json({ message: "State data not stored successfully", success: false, error: true });
+    }
+});
+BusinessRouter.get('/getstate/:state', async (req, res) => {
+    const stateName = req.params.state;
+    try {
+        if (stateName) {
+            const data = await StateDb.findOne({ name: stateName });
+            
+            if (data) {
+                res.status(200).json({ message: "State found successfully", data: data, success: true, error: false });
+            } else {
+                res.status(404).json({ message: "State not found", success: false, error: true });
+            }
+        } else {
+            res.status(400).json({ message: 'Name not provided', success: false, error: true });
+        }
+    } catch (error) {
+        res.status(500).json({ message: "Internal server error", success: false, error: true });
+    }
+});
+
+
+BusinessRouter.put('/priceupdation/:state', async(req,res) =>{
+
+    const state = req.params.state;
+
+    if(!state){
+    res.status(400).json({message:'state data not present',success:false,error:true})
+}
+
+const {basePricePerKm, expressStandardMultiplier, expressPremiumMultiplier, weightFactor,volumeFactor} = req.body;
+
+if(
+    basePricePerKm === undefined || expressStandardMultiplier === undefined || expressPremiumMultiplier === undefined || weightFactor === undefined || volumeFactor === undefined
+){
+    return res.statusCode(404).json({message:"incomplete data provided", success:false, error:true});
+}
+     try{
+
+        const updateData = await StateDb.findOneAndUpdate(
+            {name:state},
+            {
+                basePricePerKm,expressStandardMultiplier,expressPremiumMultiplier,weightFactor,volumeFactor
+            },
+            {new:true}
+        );
+
+        if(!updateData){
+            res.status.json(404).json({ message:"state not found",success:false,error:true});
+        }
+        res.status(200).json({ message:"updated successfully",success:true,error:false,data:updateData});
+     }
+     catch(error){
+        res.status(500).json({message:"internal server error",success:false,error:true,})
+     }
+})
 
 
 module.exports = BusinessRouter;

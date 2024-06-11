@@ -15,6 +15,7 @@ import { createTheme, ThemeProvider } from "@mui/material/styles";
 import { useState } from "react";
 import axios from "axios";
 import NavbarOne from "../NavbarOne";
+import { ToastContainer, toast } from 'react-toastify';
 
 function DeliveryRegister() {
 
@@ -30,12 +31,41 @@ function DeliveryRegister() {
     user_image: null,
   });
 
+  const [error ,setError] = useState({
+    phone_number:"",
+    email:"",
+    aadhar_image:"",
+  });
+
   const handleChange = (e) => {
     if (e.target.files) {
       setUser({ ...user, [e.target.name]: e.target.files[0] });
     } else {
       setUser({ ...user, [e.target.name]: e.target.value });
+      validateField(e.target.name, e.target.value);
     }
+  };
+
+
+  const validateField = (name, value) => {
+    let errorMsg = "";
+    switch (name) {
+      case "phone_number":
+        const phoneRegex = /^[0-9]{10}$/;
+        errorMsg = phoneRegex.test(value) ? "" : "Phone number must be 10 digits";
+        break;
+      case "email":
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        errorMsg = emailRegex.test(value) ? "" : "Invalid email address";
+        break;
+      case "license_number":
+        const DrivingRegex = /^[0-9]{16}$/;
+        errorMsg = DrivingRegex.test(value) ? "" : "Driving License Number Should be 16 digits";
+        break;
+      default:
+        break;
+    }
+    setError({ ...error, [name]: errorMsg });
   };
 
   const handleSubmit = (e) => {
@@ -59,9 +89,19 @@ function DeliveryRegister() {
     
       .then((response) => {
         console.log(response);
+        toast.success("your Registration Completed successfully you will get an approval email from admin Thank You",{
+
+        });
+        setTimeout(() =>{
+          window.location.reload();
+        },3000);
       })
       .catch((error) => {
         console.log(error, "something went wrong");
+        toast.error("Registration failed",error);
+        setTimeout(() =>{
+          window.location.reload();
+        },2000);
       });
   };
 
@@ -112,6 +152,8 @@ function DeliveryRegister() {
                   id="phone_number"
                   label="Phone Number"
                   name="phone_number"
+                  error={!!error.phone_number}
+                  helperText={error.phone_number ? "Enter correct phone number." :""}
                   autoComplete="phone number"
                   onChange={handleChange}
                 />
@@ -123,6 +165,8 @@ function DeliveryRegister() {
                   id="email_address"
                   label="email"
                   name="email"
+                  error={!!error.email}
+                  helperText={error.email ? "Enter valid email address.":""}
                   autoComplete="email"
                   onChange={handleChange}
                 />
@@ -144,7 +188,9 @@ function DeliveryRegister() {
                   name="license_number"
                   label="Driving License Number"
                   type="string"
-                  id="zipcode"
+                  error={!!error.license_number}
+                  helperText={error.license_number ? "Enter valid License Number.":""}
+                  id="license number"
                   onChange={handleChange}
                 />
               </Grid>
@@ -213,6 +259,22 @@ function DeliveryRegister() {
             >
               Sign Up
             </Button>
+            {/* tost container  */}
+
+            <ToastContainer
+          position="top-right"
+          autoClose={3000}
+          hideProgressBar={false}
+          newestOnTop={false}
+          closeOnClick
+          rtl={false}
+          pauseOnFocusLoss
+          draggable
+          pauseOnHover
+          theme="light"
+          />
+
+            {/* toast container end */}
             <Grid container justifyContent="flex-end">
               <Grid item>
                 <Link href="#" variant="body2">

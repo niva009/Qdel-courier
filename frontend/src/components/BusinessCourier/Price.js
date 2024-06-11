@@ -480,7 +480,7 @@ const Price = () =>{
                             id: 'expressPremium',
                             name: 'Express Premium Shipping',
                             price: data.expressPremiumPrice,
-                            description: 'Next-day delivery.'
+                            description: 'Delivery within two Days'
                         }
                     ]);
                 })

@@ -8,14 +8,14 @@ const icons = { IconDashboard };
 
 const dashboard = {
   id: 'dashboard',
-  title: 'Dashboard',
+  title: 'Total Invoices',
   type: 'group',
   children: [
     {
       id: 'default',
-      title: 'Dashboard',
+      title: 'Total Invoices',
       type: 'item',
-      url: '/qdel',
+      url: '/totalInvoice',
       icon: icons.IconDashboard,
       breadcrumbs: false
     }

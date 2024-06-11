@@ -10,9 +10,18 @@ import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import Typography from '@mui/material/Typography';
 import Container from '@mui/material/Container';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
+import Select from '@mui/material/Select';
+import MenuItem from '@mui/material/MenuItem';
+
+const StateList = [
+  "Kerala",
+  "Tamil Nadu",
+  "Karnataka" 
+];
 
 const Charges = () => {
   const [priceInfo, setPriceInfo] = useState({});
+  const [selectedState, setSelectedState] = useState('');
   const defaultTheme = createTheme();
 
   const handleChange = (e) => {
@@ -20,9 +29,13 @@ const Charges = () => {
     setPriceInfo({ ...priceInfo, [name]: value });
   };
 
+  const handleStateChange = (e) => {
+    setSelectedState(e.target.value);
+  };
+
   const handleSubmit = (e) => {
     e.preventDefault();
-    axios.put('http://localhost:3001/api/changeCharge', priceInfo)
+    axios.put(`http://localhost:3001/api/priceupdation/${selectedState}`, priceInfo)
       .then(updatedCharge => {
         console.log(updatedCharge.data);
       })
@@ -51,9 +64,27 @@ const Charges = () => {
           </Typography>
           <Box component="form" noValidate onSubmit={handleSubmit} sx={{ mt: 3 }}>
             <Grid container spacing={2}>
+              <Grid item xs={12}>
+                <Select
+                  fullWidth
+                  value={selectedState}
+                  onChange={handleStateChange}
+                  displayEmpty
+                  inputProps={{ 'aria-label': 'Select State' }}
+                >
+                  <MenuItem value="" disabled>
+                    Select State
+                  </MenuItem>
+                  {StateList.map((state) => (
+                    <MenuItem key={state} value={state}>
+                      {state}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </Grid>
               <Grid item xs={12} sm={4}>
                 <TextField
-                  name="pricePerKm"
+                  name="basePricePerKm"
                   required
                   fullWidth
                   onChange={handleChange}
@@ -67,7 +98,7 @@ const Charges = () => {
                   fullWidth
                   label="Price Per Kg"
                   onChange={handleChange}
-                  name="pricePerKg"
+                  name="weightFactor"
                 />
               </Grid>
               <Grid item xs={12} sm={4}>
@@ -76,14 +107,14 @@ const Charges = () => {
                   fullWidth
                   onChange={handleChange}
                   label="Price Per Volume"
-                  name="pricePerVolume"
+                  name="volumeFactor"
                 />
               </Grid>
               <Grid item xs={12}>
                 <TextField
                   required
                   fullWidth
-                  label="Express Standard Multiplier"
+                  label="expressStandardMultiplier"
                   onChange={handleChange}
                   name="expressStandardMultiplier"
                 />
@@ -94,7 +125,7 @@ const Charges = () => {
                   fullWidth
                   name="expressPremiumMultiplier"
                   onChange={handleChange}
-                  label="Express Premium Multiplier"
+                  label="expressPremiumMultiplier"
                 />
               </Grid>
             </Grid>
@@ -103,6 +134,7 @@ const Charges = () => {
               fullWidth
               variant="contained"
               sx={{ mt: 3, mb: 2 }}
+              disabled={!selectedState} // Disable button if state is not selected
             >
               Update
             </Button>

@@ -39,7 +39,7 @@ export default function Deliverypartnerlist() {
                         <td>{index + 1}</td>
                         <td> 
                         {item.user_image && (
-                      <img src={`./public/assets/uploads/${item.user_image.split('\\').pop()}`} alt={item.name} />
+                      <img width={'100px'} src={`http://localhost:3001/${item.user_image}`} alt={item.name} />
                         )}
                         </td>
                         <td>{item.name}</td>

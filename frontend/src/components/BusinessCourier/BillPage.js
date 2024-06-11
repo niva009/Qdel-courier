@@ -5,17 +5,21 @@ import {
   MDBCol,
   MDBContainer,
   MDBIcon,
-  MDBInput,
   MDBRow,
   MDBTooltip
 } from "mdb-react-ui-kit";
 import NavbarOne from "../NavbarOne";
 import axios from 'axios';
+import {useNavigate} from 'react-router-dom'
 
 
 export default function Bill() {
 
+  const navigate = useNavigate();
+
   const [data, setData] = useState('');
+  const [invoiceNumber, setInvoiceNumber] =useState('');
+  const[trackingId,setTrackingId] = useState('');
   const[priceDetail,setPriceDetail] = useState({
 
     pickupCharge: 0,
@@ -23,6 +27,7 @@ export default function Bill() {
     totalPrice:0,
     extraSecurityCharge:0,
   });
+
 
   useEffect(() => {
     const storedData = localStorage.getItem('FormId');
@@ -53,6 +58,53 @@ export default function Bill() {
   }, [data]); 
 
   console.log(priceDetail,"price detailss");
+
+  useEffect(() => {
+    const prefix = "qdel";
+    const number = Math.floor(Math.random() * 10000);
+    const formattedNumber = String(number).padStart(4, '0');
+    const generatedInvoiceNumber = prefix + formattedNumber;
+    setInvoiceNumber(currentInvoiceNumber => {
+      if (!currentInvoiceNumber) {
+        return generatedInvoiceNumber;
+      }
+      return currentInvoiceNumber;
+    });
+  }, []);
+
+  useEffect(() => {
+    const prefix = "QD";
+    const timestamp = Date.now();
+    const randomSuffix = Math.floor(Math.random() * 90000) + 10000;
+    const trackingId = `${prefix}${randomSuffix}`;
+    console.log(trackingId);
+    setTrackingId(currentTrackingId => {
+      if (!currentTrackingId) {
+        return trackingId;
+      }
+      return currentTrackingId;
+    });
+  }, []);
+
+  useEffect(() =>{
+
+    if(data){
+
+    axios.put(`http://localhost:3001/api/generateId/${data}`,{
+
+    invoiceNumber: invoiceNumber,
+    trackingId: trackingId,
+    })
+    .then(response =>{
+      console.log('generated invoice and tracking',response);
+    })
+    .catch(error =>{
+      console.log(error,"error information");
+    })
+    }else{
+      console.log('formid is not present');
+    }
+  },[invoiceNumber,trackingId])
 
   
 
@@ -87,6 +139,7 @@ export default function Bill() {
         handler: function (response) {
           // This function handles the payment success response
           alert(`Payment successful! Payment ID: ${response.razorpay_payment_id}`);
+          navigate('/downloadinvoice');
         },
         prefill: {
           name: 'Qdel india private limited',

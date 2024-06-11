@@ -24,6 +24,67 @@ import { useNavigate} from "react-router-dom";
 import { MdCloudUpload } from "react-icons/md";
 
 
+const UploadModal = ({ show, onHide, handleUpload, handleFileChange1, handleFileChange2, handleDrop1, handleDrop2, handleDragOver, file1, file2 }) => {
+  return (
+    <Modal
+      size="lg"
+      aria-labelledby="contained-modal-title-vcenter"
+      centered
+      show={show}
+      onHide={onHide}
+    >
+      <Modal.Header closeButton>
+        <Modal.Title style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+          Upload AAdhar Card Image Here
+        </Modal.Title>
+      </Modal.Header>
+      <Modal.Body>
+        <p>We don't save and share your Aadhar card image and data.</p>
+        <div style={{ display: 'flex', justifyContent: 'space-around' }}>
+          <div
+            style={{
+              width: '45%',
+              height: '200px',
+              border: '2px dashed #ccc',
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center',
+              flexDirection: 'column'
+            }}
+            onDrop={handleDrop1}
+            onDragOver={handleDragOver}
+          >
+            {file1 ? <p>{file1.name}</p> : <p>Drag & Drop front side of the Aadhar Image</p>}
+            <input type="file" onChange={handleFileChange1} style={{ display: 'none' }} id="fileInput1" />
+            <label htmlFor="fileInput1" style={{ cursor: 'pointer' }}>or choose file</label>
+          </div>
+          <div
+            style={{
+              width: '45%',
+              height: '200px',
+              border: '2px dashed #ccc',
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center',
+              flexDirection: 'column'
+            }}
+            onDrop={handleDrop2}
+            onDragOver={handleDragOver}
+          >
+            {file2 ? <p>{file2.name}</p> : <p>Drag & Drop back side of the Aadhar Image</p>}
+            <input type="file" onChange={handleFileChange2} style={{ display: 'none' }} id="fileInput2" />
+            <label htmlFor="fileInput2" style={{ cursor: 'pointer' }}>or choose file</label>
+          </div>
+        </div>
+      </Modal.Body>
+      <Modal.Footer>
+        <Button  style={{padding:'10px 20px',color:'white',backgroundColor:'orange',border:'none'}} onClick={handleUpload}>Upload</Button>
+      </Modal.Footer>
+    </Modal>
+  );
+};
+
+
 
 
 const FormGrid = styled(Grid)(() => ({
@@ -50,8 +111,6 @@ const FormGrid = styled(Grid)(() => ({
       border: 0,
     },
   }));
-  
-
 
 const Form_1 = () =>{
 
@@ -68,9 +127,78 @@ const Form_1 = () =>{
       const [smShow, setSmShow] = useState(false);
       const [lgShow, setLgShow] = useState(false);
       const [ addressModal ,setAddressModal] = useState([]);
+      const [modalShow, setModalShow] = useState(false);
+      const [file1, setFile1] = useState(null);
+      const [file2, setFile2] = useState(null);
+      const [dataFromCard,setDataFromCard] = useState({ name: '', address:'', zipcode:''});
+      const [fromLocationInfo,setFromLocationInfo] = useState('');
+      const [toLocationInfo, setToLocationInfo] = useState('')
 
 
-      console.log(token,"user token")
+      ////////////////////this  code user data from aadhar and fill the form ///////////////////
+
+
+      
+  const handleFileChange1 = (e) => {
+    setFile1(e.target.files[0]);
+  };
+
+  const handleFileChange2 = (e) => {
+    setFile2(e.target.files[0]);
+  };
+
+  const handleDrop1 = (e) => {
+    e.preventDefault();
+    setFile1(e.dataTransfer.files[0]);
+  };
+
+  const handleDrop2 = (e) => {
+    e.preventDefault();
+    setFile2(e.dataTransfer.files[0]);
+  };
+
+  const handleDragOver = (e) => {
+    e.preventDefault();
+  };
+
+  const handleUpload = () => {
+    const formData = new FormData();
+    if (file1) formData.append('uploadedImages', file1);
+    if (file2) formData.append('uploadedImages', file2);
+
+    axios.post('http://localhost:3001/api/image-processing', formData)
+      .then(response => {
+        const { name, address, zipcode} = response.data.data
+        setDataFromCard({name, address, zipcode});
+        alert(`Name: ${response.data.data.name} Address: ${response.data.data.address}\n zipcode: ${response.data.data.zipcode}`);
+      })
+      .catch(error => {
+        console.error('There was an error uploading the files!', error.message);
+      })
+      .finally(() => {
+        setModalShow(false);
+      });
+  };
+
+  console.log(dataFromCard,"data are here");
+
+
+
+/////////////////////update form state when DataFromCard are change //////////////////////////
+  useEffect(() => {
+    setForm(prevForm => ({
+      ...prevForm,
+      from_name: dataFromCard.name,
+      from_address: dataFromCard.address,
+      from_zipcode: dataFromCard.zipcode,
+    }));
+  }, [dataFromCard])
+
+
+
+
+
+      //////////////////// this code end here///////////////////////////////
     
       const [ form, setForm] = useState({
         from_name:'',
@@ -78,39 +206,39 @@ const Form_1 = () =>{
         from_address: '',
         from_state: '',
         from_district: '',
-        from_city: '',
         from_zipcode: '',
         from_vat_id:'',
-        from_eoriNumber:"",
         to_name: '',
         to_phone_number: '',
         to_address: '',
         to_state: '',
         to_district: '',
-        to_city: '',
         to_zipcode: '',
         user_id: '',
-        to_eoriNumber:"",
         to_vat_id:"",
 
       }) ;
 
-      const stateDistrictsData = {
-        "Andhra Pradesh": ['Srikakulam','Parvathipuram Manyam','Vizianagaram','Visakhapatnam','Alluri Sitharama Raju','Anakapalli','Kakinada'],
-        "Kerala": ['kasargod','kannur','kozhiokode','wayanad','malapuram','ernakulam','palakkad','alapuzha','kollam','trivandrum','edukki','thrissur','Pathanamthitta','Kottayam'],
-        "TamilNadu": ['Ariyalur','Chengalpattu','Chennai','Coimbatore','Cuddalore','Dharmapuri','Dindigul','Erode','Kallakurichi','Kancheepuram','Karur','Krishnagiri','Madurai','Mayiladuthurai','Nagapattinam','Kanniyakumari','Namakkal','Perambalur','Pudukottai','Ramanathapuram','Ranipet','Salem','Sivagangai','Tenkasi','Thanjavur','Theni','Thiruvallur','Thiruvarur','Thoothukudi','Trichirappalli','Thirunelveli','Tirupathur','Tiruppur','Tiruvannamalai','The Nilgiris','Vellore','Viluppuram','Virudhunagar'],
-        "Karnataka": ['Bagalkot','Bangalore','Belgaum','Bellary','Bidar','Bijapur', 'Chamarajanagar','Chikkaballapur','Chikkamagaluru','Chitradurga','Dakshina Kannada','Davanagere','Dharwad','Gadag','Hassan','Haveri','Kalaburagi','Kodagu','Kolar','Koppal','Mandya','Mysuru','Raichur','Ramanagara','Shivamogga','Tumakuru','Udupi','Karwar','Vijayapura','Yadgir'],
-      }
       const handleChange = (e) =>{
         const {name,value} = e.target
         setAddress({
          ...address,
          [name]:value
         });
-        setForm({
-          ...form,
-          [name]:value
-        })
+        setForm(prevForm => ({
+          ...prevForm,
+          [name]: value
+        }));
+
+
+
+
+        if (name === 'from_name' || name === 'from_address' || name === 'from_zipcode') {
+          setDataFromCard(prevData => ({
+            ...prevData,
+            [name.replace('from_', '')]: value
+          }));
+        }
        }
        const handleNicknameChange = (e) =>{
          setNickname(e.target.value);
@@ -119,6 +247,20 @@ const Form_1 = () =>{
       const submitAddress = () =>{
         handleShow();
       }
+
+      
+      useEffect(() =>{
+        setForm(prevForm => ({
+          ...prevForm,
+          from_district:fromLocationInfo.from_district,
+          from_state:fromLocationInfo.from_state,
+        }))
+        setForm(prevForm =>({
+          ...prevForm,
+          to_district:toLocationInfo.to_district,
+          to_state:toLocationInfo.to_state,
+        }))
+      },[fromLocationInfo,toLocationInfo]);
 
       useEffect(() => {
         const token = localStorage.getItem('token');
@@ -140,6 +282,80 @@ const Form_1 = () =>{
             });
         }
       }, [])
+
+      const ApiKey = 'AIzaSyA7iwZvlrBjdkqB51xMCP76foKkIeqG8co';
+useEffect(() => {
+  const FetchAddress = async () => {
+    try {
+      if (form && form.from_zipcode) {
+        const response = await axios.get(`https://maps.googleapis.com/maps/api/geocode/json?key=${ApiKey}&address=${form.from_zipcode}`);
+        const addressData = response.data;
+        const addressComponents = addressData.results[0].address_components;
+
+        let from_district = '';
+        let from_state = '';
+
+        addressComponents.forEach((component) => {
+          if (component.types.includes('locality') || component.types.includes('administrative_area_level_2') || component.types.includes('administrative_area_level_3')) {
+            from_district = component.long_name;
+          } else if (component.types.includes('administrative_area_level_1')) {
+            from_state = component.long_name;
+          }
+        });
+
+        setFromLocationInfo({
+          from_district,
+          from_state,
+          // You can also extract other information like latitude, longitude, etc.
+          // latitude: addressData.results[0].geometry.location.lat,
+          // longitude: addressData.results[0].geometry.location.lng,
+        });
+      }
+    } catch (error) {
+      console.log(error, 'address error');
+    }
+  };
+  FetchAddress();
+}, [form.from_zipcode]);
+
+
+useEffect(() => {
+  const FetchAddress = async () => {
+    try {
+
+      if( form && form.to_zipcode){
+
+        const response = await axios.get(`https://maps.googleapis.com/maps/api/geocode/json?key=${ApiKey}&address=${form.to_zipcode}`);
+        const addressData = response.data;
+        const addressComponents = addressData.results[0].address_components;
+
+        let to_district = '';
+        let to_state = '';
+
+        addressComponents.forEach((component) => {
+          if (component.types.includes('locality') || component.types.includes('administrative_area_level_2') || component.types.includes('administrative_area_level_3')) {
+            to_district = component.long_name;
+          } else if (component.types.includes('administrative_area_level_1')) {
+            to_state = component.long_name;
+          }
+        });
+
+        setToLocationInfo({
+          to_district,
+          to_state,
+          // You can also extract other information like latitude, longitude, etc.
+          // latitude: addressData.results[0].geometry.location.lat,
+          // longitude: addressData.results[0].geometry.location.lng,
+        });
+      }
+    } catch (error) {
+      console.log(error, 'address error');
+    }
+  };
+  FetchAddress();
+}, [form.to_zipcode]);
+
+console.log(toLocationInfo,"to state");
 
       const handleSubmit = (e) => {
         e.preventDefault();
@@ -168,11 +384,9 @@ const Form_1 = () =>{
          to_address: address.to_address,
          to_state: address.to_state,
          to_zipcode: address.to_zipcode,
-         to_city: address.to_city,
          to_district: address.to_district,
          nickname:nickname,
          user_id:userid,
-         to_eoriNumber: address.to_eoriNumber,
          to_vat_id: address.to_vat_id,
                  } 
                  axios.post('http://localhost:3001/api/address/address-book',AddressData)
@@ -197,18 +411,39 @@ const Form_1 = () =>{
           to_address: rowData.to_address,
           to_state: rowData.to_state,
           to_district: rowData.to_district,
-          to_city: rowData.to_city,
           to_zipcode: rowData.to_zipcode,
           to_vat_id: rowData.to_vat_id,
-          to_eoriNumber: rowData.to_eoriNumber
         });
       };
-      
+
+      useEffect(() =>{
+        setAddress(prevForm =>({
+          ...prevForm,
+          to_district:toLocationInfo.to_district,
+          to_state:toLocationInfo.to_state,
+        }))
+      },[toLocationInfo]);
+    
 
     return(
         <div>
 
+
+<UploadModal
+        show={modalShow}
+        onHide={() => setModalShow(false)}
+        handleUpload={handleUpload}
+        handleFileChange1={handleFileChange1}
+        handleFileChange2={handleFileChange2}
+        handleDrop1={handleDrop1}
+        handleDrop2={handleDrop2}
+        handleDragOver={handleDragOver}
+        file1={file1}
+        file2={file2}
+      />
+
      {/*///////////////////////////////////// small modal start here ///////////////////////////////////////////*/}
+
 
 
       <Modal show={show} onHide={handleClose}>
@@ -258,7 +493,6 @@ const Form_1 = () =>{
             <StyledTableCell>nickname</StyledTableCell>
             <StyledTableCell align="right">Name</StyledTableCell>
             <StyledTableCell align="right">Address</StyledTableCell>
-            <StyledTableCell align="right">City</StyledTableCell>
             <StyledTableCell align="right">State</StyledTableCell>
           </TableRow>
         </TableHead>
@@ -270,7 +504,6 @@ const Form_1 = () =>{
         </StyledTableCell>
         <StyledTableCell align="right">{item.to_name}</StyledTableCell>
         <StyledTableCell align="right">{item.to_address}</StyledTableCell>
-        <StyledTableCell align="right">{item.to_city}</StyledTableCell>
         <StyledTableCell align="right">{item.to_state}</StyledTableCell>
       </StyledTableRow>
     ))}
@@ -286,7 +519,7 @@ const Form_1 = () =>{
     <Grid container spacing={3} style={{ marginTop:'50px',padding:'80px 50px' ,paddingBottom:'50px'}}>
       <Grid item xs={12} md={6}>
         <div>
-          <FormLabel style={{ fontSize: '33px' }}>From</FormLabel><button onClick={() => setLgShow(true)} style={{border:'none'}}><MdCloudUpload style={{color:'orange',fontSize:'1.5em'}}/></button> * Upload your Aaadhar card or identity card to automaticaly fill this field
+          <FormLabel style={{ fontSize: '33px' }}>From</FormLabel><button onClick={() => setModalShow(true)} style={{border:'none'}}><MdCloudUpload style={{color:'orange',fontSize:'1.5em'}}/></button> * Upload your Aaadhar card to automaticaly fill this field
 
           <FormGrid>
             <FormLabel htmlFor="first-name" required>
@@ -295,6 +528,7 @@ const Form_1 = () =>{
             <OutlinedInput
               id="first-name"
               name="from_name"
+              value={form.from_name} 
               type="name"
               placeholder="John"
               onChange={handleChange}
@@ -319,6 +553,7 @@ const Form_1 = () =>{
             <OutlinedInput
               id="address1"
               name="from_address"
+              value={form.from_address} 
               onChange={handleChange}
               type="address1"
               autoComplete="from_address"
@@ -328,22 +563,11 @@ const Form_1 = () =>{
             <OutlinedInput
               id="address2"
               onChange={handleChange}
+              value={form.from_zipcode}
               name="from_zipcode"
               type="zipcode1"
               placeholder="123456"
               autoComplete="zipcode"
-            />
-            <FormLabel htmlFor="city" required>
-              City
-            </FormLabel>
-            <OutlinedInput
-              id="city"
-              onChange={handleChange}
-              name="from_city"
-              type="city"
-              placeholder="chennai"
-              autoComplete="City"
-              required
             />
              <Grid container spacing={2}>
              <Grid item xs={6}>
@@ -351,19 +575,13 @@ const Form_1 = () =>{
       State
     </FormLabel>
     <TextField
-      select
       required
       fullWidth
       name="from_state"
-      id="state"
+      value={form.from_state}
+      id="from-state"
       onChange={handleChange}
-      SelectProps={{ native: true }}
     >
-      {Object.keys(stateDistrictsData).map((state, index) => (
-        <option key={index} value={state}>
-          {state}
-        </option>
-      ))}
     </TextField>
   </Grid>
 
@@ -372,19 +590,13 @@ const Form_1 = () =>{
       District
     </FormLabel>
     <TextField
-      select
       required
       fullWidth
       name="from_district"
-      id="district"
+      id="from-district"
+      value={form.from_district}
       onChange={handleChange}
-      SelectProps={{ native: true }}
     >
-      {stateDistrictsData[form.from_state]?.map((district, index) => (
-        <option key={index} value={district}>
-          {district}
-        </option>
-      ))}
     </TextField>
   </Grid>
   
@@ -397,15 +609,6 @@ const Form_1 = () =>{
               name="from_vat_id"
               type="text"
               autoComplete="vat_id"
-            />
-            <FormLabel htmlFor="Eori number" >
-              Eori Number
-            </FormLabel>
-            <OutlinedInput
-              onChange={handleChange}
-              name="from_eoriNumber"
-              type="text"
-              autoComplete="Eori-number"
             />
           </FormGrid>
         </div>
@@ -458,38 +661,19 @@ const Form_1 = () =>{
               placeholder="123456"
               autoComplete="shipping address-line2"
             />
-            <FormLabel htmlFor="city" required>
-              City
-            </FormLabel>
-            <OutlinedInput
-              onChange={handleChange}
-              name="to_city"
-              type="city"
-              value={address.to_city}
-              placeholder="bangalore"
-              autoComplete="City"
-              required
-            />
          <Grid container spacing={2}>
          <Grid item xs={6}>
     <FormLabel htmlFor="state" required>
       State
     </FormLabel>
     <TextField
-      select
       required
       fullWidth
-      value={address.to_state}
+      value={address.to_state ||form.to_state}
       name="to_state"
       id="state"
       onChange={handleChange}
-      SelectProps={{ native: true }}
     >
-      {Object.keys(stateDistrictsData).map((state, index) => (
-        <option key={index} value={state}>
-          {state}
-        </option>
-      ))}
     </TextField>
   </Grid>
 
@@ -498,20 +682,13 @@ const Form_1 = () =>{
       District
     </FormLabel>
     <TextField
-      select
       required
       fullWidth
       name="to_district"
       id="district"
-      value={address.to_district}
+      value={address.to_district || form.to_district}
       onChange={handleChange}
-      SelectProps={{ native: true }}
     >
-      {stateDistrictsData[address.to_state]?.map((district, index) => (
-        <option key={index} value={district}>
-          {district}
-        </option>
-      ))}
     </TextField>
   </Grid>
 </Grid>
@@ -522,17 +699,6 @@ const Form_1 = () =>{
               name="to_vat_id"
               onChange={handleChange}
               value={address.to_vat_id}
-              type="text"
-              autoComplete="address"
-              required
-            />
-            <FormLabel htmlFor="address1" required>
-              EORI Number
-            </FormLabel>
-            <OutlinedInput
-              onChange={handleChange}
-              value={address.to_eoriNumber}
-              name="to_eoriNumber"
               type="text"
               autoComplete="address"
               required

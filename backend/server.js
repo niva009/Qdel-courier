@@ -2,6 +2,8 @@ const express = require('express');
 const App = express();
 const mongoose = require('mongoose');
 const redis = require('redis');
+const path = require('path');
+const cors = require('cors'); 
 
 const RegisterRouter = require('./Router/RegisterRouter');
 const  DeliveryRegisterRouter = require('./Router/DeliveryRegisterRouter');
@@ -15,18 +17,37 @@ const AddressRouter = require( './Router/AddressRouter');
 const BusinessRouter = require( './Router/BusinessRouter');
 const PaymentRouter = require( './Router/PaymentRouter')
 
+const allowedOrigins = ['http://localhost:3000', 'http://localhost:3002'];
 
-const cors = require('cors');
+App.use(cors());
+
+const corsOptions = {
+    origin: function (origin, callback) {
+        if (allowedOrigins.indexOf(origin) !== -1 || !origin) {
+            callback(null, true);
+        } else {
+            callback(new Error('Not allowed by CORS'));
+        }
+    },
+    credentials: true,
+    optionsSuccessStatus: 200
+};
+
+App.use(cors(corsOptions));
+
 const ngrok = require('ngrok');
 
 
 const port = 3001
 const Redis_Port = 6379;
 
-App.use(cors());
+
 
 App.use(bodyParser.json()); 
 App.use(bodyParser.urlencoded({extended:true})); 
+
+App.use(express.static('uploads'));
+
 
 const redisClient = redis.createClient(Redis_Port);
 redisClient.on('error', function(error) {
@@ -95,6 +116,8 @@ App.use( '/api/', BusinessRouter);//////////to store nerest location and pickup 
 App.use( '/api/', PaymentRouter);/////////////for payment integration/////////////////////////
 App.use( '/api/', BusinessRouter); /////// http://localhost:3001/api/pckupdate/id    for saving data and curesponsing charge
 App.use( '/api/', BusinessRouter);///////http://localhost:3001/api/changeCharge/
+App.use( '/api/', BusinessRouter); ///////http://localhost:3001/api/image-processing'// proces image for string information
+App.use('/api',BusinessRouter);
 App.listen(port, () => {
     console.log(`server running on port ${port}`);
 });

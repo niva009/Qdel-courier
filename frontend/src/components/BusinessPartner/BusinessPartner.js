@@ -15,6 +15,7 @@ import { createTheme, ThemeProvider } from "@mui/material/styles";
 import { useState } from "react";
 import axios from "axios";
 import NavbarOne from "../NavbarOne";
+import { ToastContainer, toast } from 'react-toastify';
 
 function BusinessReg() {
   const [user, setUser] = useState({
@@ -28,6 +29,13 @@ function BusinessReg() {
     state: "",
     district:"",
   });
+  const [ error, setError] = useState({
+    phone_number:"",
+    aadhar_number:"",
+    email:"",
+  })
+
+
 
   const stateDistrictsData = {
     "Andhra Pradesh": ['Srikakulam','Parvathipuram Manyam','Vizianagaram','Visakhapatnam','Alluri Sitharama Raju','Anakapalli','Kakinada'],
@@ -40,7 +48,29 @@ function BusinessReg() {
       setUser({ ...user, [e.target.name]: e.target.files[0] });
     } else {
       setUser({ ...user, [e.target.name]: e.target.value });
+      validateField(e.target.name, e.target.value);
     }
+  };
+
+  const validateField  = (name, value) => {
+    let errorMsg = "";
+    switch (name) {
+      case "phone_number":
+        const phoneRegex = /^[0-9]{10}$/;
+        errorMsg = phoneRegex.test(value) ? "" : "Phone number must be 10 digits";
+        break;
+      case "email":
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        errorMsg = emailRegex.test(value) ? "" : "Invalid email address";
+        break;
+      case "aadhar_number":
+        const AaadharRegex = /^[0-9]{16}$/;
+        errorMsg = AaadharRegex.test(value) ? "" : "Enter Valid Aadhar Number"; 
+        break;
+      default:
+        break;
+    }
+    setError({ ...error, [name]: errorMsg });
   };
 
 
@@ -63,9 +93,19 @@ function BusinessReg() {
     
       .then((response) => {
         console.log(response);
+        toast.success("your Registration Completed successfully you will get an approval email from admin Thank You",{
+
+        });
+        setTimeout(() =>{
+          window.location.reload();
+        },3000);
       })
       .catch((error) => {
         console.log(error, "something went wrong");
+        toast.error("Registration failed",error);
+        setTimeout(() =>{
+          window.location.reload();
+        },2000);
       });
   };
 
@@ -118,6 +158,8 @@ function BusinessReg() {
                   id="phone_number"
                   label="Phone Number"
                   name="phone_number"
+                  error={!!error.phone_number}
+                  helperText={error.phone_number ? "Enter correct phone number." :""}
                   autoComplete="phone number"
                   onChange={handleChange}
                 />
@@ -129,6 +171,8 @@ function BusinessReg() {
                   id="email_address"
                   label="email"
                   name="email"
+                  error={!!error.email}
+                  helperText={error.email ? "Enter valid email address.":""}
                   autoComplete="phone email"
                   onChange={handleChange}
                 />
@@ -187,6 +231,8 @@ function BusinessReg() {
                   fullWidth
                   name="aadhar_number"
                   label="aadhar Card Number "
+                  error={!!error.aadhar_number}
+                  helperText={error.aadhar_number ? "Enter valid License Number.":""}
                   type="string"
                   id="aadhar -card"
                   onChange={handleChange}
@@ -214,6 +260,18 @@ function BusinessReg() {
                   onChange={handleChange}
                 />
               </Grid>
+              <ToastContainer
+          position="top-right"
+          autoClose={3000}
+          hideProgressBar={false}
+          newestOnTop={false}
+          closeOnClick
+          rtl={false}
+          pauseOnFocusLoss
+          draggable
+          pauseOnHover
+          theme="light"
+          />
               <Grid item xs={12}>
                 <label>Upload  aadhar card</label>
             <TextField
