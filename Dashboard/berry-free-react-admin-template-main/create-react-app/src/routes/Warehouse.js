@@ -6,9 +6,7 @@ import MinimalLayout from 'layout/MinimalLayout';
 
 // login option 3 routing
 const WarehouseRequest = Loadable(lazy(() => import('views/Warehouse/approvel')));
-
-
-
+const TotalWarehouse = Loadable(lazy(() => import('views/Warehouse/totalWarehouse')));
 
 // ==============================|| AUTHENTICATION ROUTING ||============================== //
 
@@ -18,7 +16,11 @@ const WarehouseAdminRoute = {
   children: [
     {
       path: '/ware-house/approval',
-      element: < WarehouseRequest/>
+      element: <WarehouseRequest />
+    },
+    {
+      path: '/ware-house/totalWarehouse',
+      element: <TotalWarehouse />
     },
   ]
 };

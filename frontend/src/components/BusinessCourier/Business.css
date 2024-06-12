@@ -78,6 +78,8 @@
 
   /* styling price details */
 
+  
+
   .shipping-options-container {
     display: flex;
     flex-direction: column;
@@ -87,10 +89,10 @@
     padding: 20px;
     background-color: #f9f9f9;
     border-radius: 8px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-}
-
-.shipping-option {
+    box-shadow: 0 4px 8px rgba(190, 63, 63, 0.1);
+  }
+  
+  .shipping-option {
     background: #fff;
     border: 1px solid #e0e0e0;
     border-radius: 8px;
@@ -100,12 +102,17 @@
     flex-direction: column;
     justify-content: space-between;
     align-items: flex-start;
-}
-
-.shipping-option:hover {
-    border-color: #007bff;
+  }
+  
+  .shipping-option:hover {
+    border-color: #5ceb38;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-}
+  }
+  
+  .shipping-option.active {
+    border-color: #5ceb38;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  }
 
 .shipping-option-input {
     display: none;

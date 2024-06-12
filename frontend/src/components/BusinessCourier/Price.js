@@ -11,7 +11,6 @@ import OutlinedInput from '@mui/material/OutlinedInput';
 import { styled } from '@mui/system';
 import axios from 'axios';
 import {jwtDecode} from "jwt-decode";
-import './Business.css';
 import { Box, Typography, Tooltip, IconButton, TextField, Select, MenuItem, FormControl, InputLabel } from '@mui/material';
 import InfoIcon from '@mui/icons-material/Info';
 import './Business.css'
@@ -401,6 +400,7 @@ const Price = () =>{
     const [formType, setFormType] = useState('Doorstep');
     const [activeButton, setActiveButton] = useState('Doorstep');
     const [saveLocationCallback, setSaveLocationCallback] = useState(() => {});
+    const [selectedOption, setSelectedOption] = useState(null);
 
     const [updateShipment, setUpdateShipment] = useState({
         height:"",
@@ -493,7 +493,7 @@ const Price = () =>{
     console.log(shippingOptions,"price details")
 
     const handleShippingChange = (option) => {
-        setSelectedShipping(option);
+        setSelectedShipping(option.id);
     
         axios.put(`http://localhost:3001/api/updateinvoice/${form._id}`, {
             choosedPlane: option.name,
@@ -601,28 +601,30 @@ useEffect(() => {
                 <DescriptionModal show={productModal} onHide={() => setProductModal(false)} form={form} />
                 <div className='container'>
                         <h5  className='main-heading'>Choose Our Planes</h5>
-
                         <div className="shipping-options-container">
-            {shippingOptions.map(option => (
-                <div key={option.id} className="shipping-option">
-                    <input
-                        type="radio"
-                        id={option.id}
-                        name="shippingOption"
-                        value={option.price}
-                        onChange={() => handleShippingChange(option)}
-                        className="shipping-option-input"
-                    />
-                    <label htmlFor={option.id} className="shipping-option-label">
-                        <div className="shipping-option-header">
-                            <span className="shipping-option-name">{option.name}</span>
-                            <span className="shipping-option-price">${option.price}</span>
-                        </div>
-                        <div className="shipping-option-description">{option.description}</div>
-                    </label>
-                </div>
-            ))}
+      {shippingOptions.map((option) => (
+        <div
+          key={option.id}
+          className={`shipping-option ${selectedOption === option.id ? 'active' : ''}`}
+        >
+          <input
+            type="radio"
+            id={option.id}
+            name="shippingOption"
+            value={option.price}
+            onChange={() => handleShippingChange(option)}
+            className="shipping-option-input"
+          />
+          <label htmlFor={option.id} className="shipping-option-label">
+            <div className="shipping-option-header">
+              <span className="shipping-option-name">{option.name}</span>
+              <span className="shipping-option-price">${option.price}</span>
+            </div>
+            <div className="shipping-option-description">{option.description}</div>
+          </label>
         </div>
+      ))}
+    </div>
 
         <div className='container'>
                         <div className='button-container' style={{padding:'50px 0px'}}>

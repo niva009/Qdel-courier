@@ -12,6 +12,7 @@ import Container from '@mui/material/Container';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 import Select from '@mui/material/Select';
 import MenuItem from '@mui/material/MenuItem';
+import { ToastContainer, toast } from 'react-toastify';
 
 const StateList = [
   "Kerala",
@@ -38,6 +39,12 @@ const Charges = () => {
     axios.put(`http://localhost:3001/api/priceupdation/${selectedState}`, priceInfo)
       .then(updatedCharge => {
         console.log(updatedCharge.data);
+        toast.success("State Price Changed Successfully",{
+
+        });
+        setTimeout(() =>{
+          window.location.reload();
+        },3000);   
       })
       .catch(error => {
         console.log('error updating price information', error);
@@ -128,6 +135,18 @@ const Charges = () => {
                   label="expressPremiumMultiplier"
                 />
               </Grid>
+              <ToastContainer
+          position="top-right"
+          autoClose={3000}
+          hideProgressBar={false}
+          newestOnTop={false}
+          closeOnClick
+          rtl={false}
+          pauseOnFocusLoss
+          draggable
+          pauseOnHover
+          theme="light"
+          />
             </Grid>
             <Button
               type="submit"

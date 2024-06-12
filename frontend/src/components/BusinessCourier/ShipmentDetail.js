@@ -221,6 +221,16 @@ const ShipmentDetails = () => {
         tolon:"",
         tolat:"",
     });
+    const[error,setError] = useState({   
+ 
+        height:"",
+        length:"",
+        width:"",
+        weight:"",
+        content:'',
+        description:"",
+        estimated_rate:"",
+    });
 
     const apiKey = "AIzaSyA7iwZvlrBjdkqB51xMCP76foKkIeqG8co";
 
@@ -321,7 +331,39 @@ const ShipmentDetails = () => {
     const handleChange = (e) => {
         const { name, value} =e.target;
         setUpdateShipment({...updateShipment, [name]:value});
+        errorValidation(e.target.name, e.target.value);
     }
+
+    const errorValidation = (name,value) =>{
+        let errorMsg = "";
+        switch (name) {
+          case "height":
+            const heightRegex = /^(?:[1-9]?[0-9]?|[1-2][0-9]{2}|300)(?:\.[0-9]{1,2})?$/;
+            errorMsg = heightRegex.test(value) ? "" : "height must number";
+            break;
+            case "length":
+                const lengthRegex = /^(?:[1-9]?[0-9]?|[1-2][0-9]{2}|300)(?:\.[0-9]{1,2})?$/;
+                errorMsg = lengthRegex.test(value) ? "" : "length must number";
+                break;
+
+                case "width":
+                    const widthRegex = /^(?:[1-9]?[0-9]?|[1-2][0-9]{2}|300)(?:\.[0-9]{1,2})?$/;
+                    errorMsg = widthRegex.test(value) ? "" : "width must number";
+                    break;
+                    case "weight":
+                        const weightRegex = /^(?:[1-9]?[0-9](?:\.[0-9]{1,2})?|0(?:\.[0-9]{1,3})?)$/;
+                        errorMsg = weightRegex.test(value) ? "" : "weight must number";
+                        break;
+
+                        case "estimated_rate":
+                            const estimatedRateRegex = /^[0-9]{10}$/;
+                            errorMsg = estimatedRateRegex.test(value) ? "" : "weight must number";
+                            break;
+          default:
+            break;
+        }
+        setError({ ...error, [name]: errorMsg });
+      };
     const handleSubmit =(e) =>{
         e.preventDefault()
         axios.put(`http://localhost:3001/api/productionDescription/${form._id}`,updateShipment)
@@ -367,6 +409,8 @@ const ShipmentDetails = () => {
     fullWidth label="weight in kg"
      id="fullWidth"
       name='weight' 
+      error={!!error.weight}
+      helperText={error.weight ? "weight should below 100 kg" :""}
       onChange={handleChange}
       /> <br/><br/>
             <Box sx={{ p: 2, border: '1px solid #ccc', borderRadius: '4px', backgroundColor: '#f5f5f5', }}>
@@ -385,6 +429,9 @@ const ShipmentDetails = () => {
       label="Length"
       variant="outlined"
       size="small"
+      error={!!error.length}
+      helperText={error.length ? "length should be number and  below 300 cm" :""}
+
       name='length'
       sx={{ flex: 1 }}
       onChange={handleChange}
@@ -393,6 +440,8 @@ const ShipmentDetails = () => {
       label="Width"
       variant="outlined"
       size="small"
+      error={!!error.width}
+      helperText={error.width ? "width should be number and below 300cm" :""}
       name='width'
       sx={{ flex: 1 }}
       onChange={handleChange}
@@ -401,7 +450,9 @@ const ShipmentDetails = () => {
       label="Height"
       variant="outlined"
       name='height'
-      size="small"
+      size="small"  
+      error={!!error.height}
+      helperText={error.height ? "height should be number and below 300cm." :""}
       sx={{ flex: 1 }}
       onChange={handleChange}
     />

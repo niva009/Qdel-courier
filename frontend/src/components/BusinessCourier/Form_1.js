@@ -22,6 +22,7 @@ import TableRow from '@mui/material/TableRow';
 import Paper from '@mui/material/Paper';
 import { useNavigate} from "react-router-dom";
 import { MdCloudUpload } from "react-icons/md";
+import { ToastContainer, toast } from 'react-toastify';
 
 
 const UploadModal = ({ show, onHide, handleUpload, handleFileChange1, handleFileChange2, handleDrop1, handleDrop2, handleDragOver, file1, file2 }) => {
@@ -138,6 +139,11 @@ const Form_1 = () =>{
       ////////////////////this  code user data from aadhar and fill the form ///////////////////
 
 
+      const showTostMessage =() =>{
+        toast(" First step completed successfully !", {
+          position: toast.POSITION.BOTTOM_LEFT,
+        });
+      }
       
   const handleFileChange1 = (e) => {
     setFile1(e.target.files[0]);
@@ -373,7 +379,7 @@ console.log(toLocationInfo,"to state");
             setError(error);
           });
       };
-
+      
       console.log(form,"form data storage");
       const saveFormData = () =>{
         try{
@@ -706,6 +712,7 @@ console.log(toLocationInfo,"to state");
             <Button onClick={submitAddress}>Save this address to address book</Button>
 
           </FormGrid>
+      <ToastContainer />
         </div> 
       </Grid>
     </Grid>

@@ -78,14 +78,14 @@ BusinessRouter.get('/warehouse', (req, res) => {
 });
 
 
-BusinessRouter.put('/updateBusiness/:id', async (req, res) => {
+BusinessRouter.put('/updatebusiness/:id', async (req, res) => {
   try {
-    const id  = req.params;
+    const id  = req.params.id;
     console.log( id , 'id information')
     
     // Update the role in the DeliveryDb model
     const updateBusiness = await BusinessDb.findByIdAndUpdate(
-      id,
+      {_id: id },
       { Role: '4' },
       { new: true },
     );
@@ -111,6 +111,7 @@ BusinessRouter.put('/updateBusiness/:id', async (req, res) => {
     res.status(500).json({ message: 'Server Error', error });
   }
 });
+
 
 BusinessRouter.get('/:district', async (req, res) => {
   try {

@@ -6,9 +6,8 @@ const ChargeDb = require('../models/ChargeModal')
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
-const Tesseract = require('tesseract.js');
-const StateDb = require('../models/StatePriceSchema')
-
+const StateDb = require('../models/StatePriceSchema');
+const vision = require('@google-cloud/vision');
 
 
 BusinessRouter.post('/business', (req, res) => {
@@ -404,12 +403,22 @@ BusinessRouter.put('/changeCharge', async(req,res) =>{
 
 })
 
+// Initialize Google Vision client
 
+
+
+// Initialize Google Vision client
+const client = new vision.ImageAnnotatorClient({
+    keyFilename: path.join(__dirname, '../Config/default.json') // Path to your service account key file
+  });
+  
+// Ensure the upload directory exists
 const uploadDir = path.join(__dirname, '/public/card/');
 if (!fs.existsSync(uploadDir)){
     fs.mkdirSync(uploadDir, { recursive: true });
 }
-
+  
+// Configure multer for file uploads
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
         cb(null, uploadDir);
@@ -418,107 +427,71 @@ const storage = multer.diskStorage({
         cb(null, file.fieldname + '-' + Date.now() + path.extname(file.originalname));
     }
 });
-
+  
 const upload = multer({ storage: storage });
-
+  
+// Define the route for image processing
 BusinessRouter.post('/image-processing', upload.array('uploadedImages', 2), async (req, res) => {
     const files = req.files;
-
+  
     if (!files || files.length !== 2) {
-        return res.status(400).json({ message: "must upload front and back portion of image", success: false, error: true });
+        return res.status(400).json({ message: "Must upload front and back portion of image", success: false, error: true });
     }
-
+  
     try {
-        const ocrResults = await Promise.all(files.map(file => {
-            return Tesseract.recognize(file.path, 'eng', {
-                logger: m => console.log(m)
-            }).then(result => {
-                // Optionally delete the uploaded file after processing
-                fs.unlinkSync(file.path);
-                return result.data.text;
-            });
-        }));
-
-        const { name, address, zipcode } = extractNameAndAddress(ocrResults);
-
+        const frontImagePath = files[0].path;
+        const backImagePath = files[1].path;
+  
+        // Use Google Vision API to detect text in the images
+        const [frontResult] = await client.textDetection(frontImagePath);
+        const [backResult] = await client.textDetection(backImagePath);
+  
+        const frontDetections = frontResult.textAnnotations;
+        const backDetections = backResult.textAnnotations;
+  
+        console.log(frontDetections, "Data from front page");
+        console.log(backDetections, "Data from back page");
+  
+        // Extract the text (the first element in the detections array contains the full text)
+        const frontText = frontDetections.length ? frontDetections[0].description : '';
+        const backText = backDetections.length ? backDetections[0].description : '';
+  
+        // Extract name, address, and pincode
+        const name = extractName(frontText);
+        const address = extractAddress(backText);
+        const zipcode = extractPincode(backText);
+  
         res.status(200).json({
             message: 'OCR processing complete',
             success: true,
             data: { name, address, zipcode }
         });
-
+  
     } catch (error) {
         res.status(500).json({ message: error.message, success: false });
     }
 });
 
-function extractNameAndAddress(ocrResults) {
-    let name = ''; 
-    let address = '';
-    let zipcode = '';
-
-    // Extracting name
-    let nameRegex = /[A-Z][A-Za-z\s]+(?=\s*\|)/;// Assuming name format is Title Case and ends before a newline
-    let nameMatch = ocrResults[0].match(nameRegex);
-    if (nameMatch) {
-        name = nameMatch[0].trim();
-    }
-
-    // Extracting address
-    let addressRegex = /Address:\s([\s\S]+?)(\d{6})/; // Match any characters including newline until the 6-digit PIN code
-    let addressMatch = ocrResults[1].match(addressRegex);
-    if (addressMatch) {
-        address = addressMatch[1].trim();
-        zipcode = addressMatch[2].trim();
-    }
-
-    console.log("pincode data", zipcode);
-    return { name, address, zipcode };
+// Function to extract name from the front text
+function extractName(frontText) {
+    const regex = /Government of India\s*([\s\S]*?)(?=\n)/;
+    const match = frontText.match(regex);
+    return match ? match[1].trim() : 'Name not found';
 }
 
+// Function to extract address from the back text
+function extractAddress(backText) {
+  const regex = /Unique Identification Authority of India\s*([\s\S]*?)(?=\d{6})/
+    const match = backText.match(regex);
+    return match ? match[1].trim() : 'Text not found';
+}
 
-BusinessRouter.put('/generateId/:id', async (req, res) => {
-    const id = req.params.id;
-    const { invoiceNumber, trackingId } = req.body;
-
-    if (!invoiceNumber && !trackingId) {
-        return res.status(400).json({
-            message: 'invoiceId and trackingId are null',
-            success: false,
-            error: true
-        });
-    }
-
-    try {
-        const updateFields = {};
-        if (invoiceNumber) updateFields['Invoice.invoiceNumber'] = invoiceNumber;
-        if (trackingId) updateFields['Invoice.trackingId'] = trackingId;
-
-        const updateData = await BusinessDb.findByIdAndUpdate(
-            id,
-            { $set: updateFields },
-            { new: true }
-        );
-
-        if (!updateData) {
-            return res.status(404).send('Business not found');
-        }
-
-        res.status(200).json({
-            message: "Updated successfully",
-            success: true,
-            error: false,
-            data:updateData,
-        });
-    } catch (error) {
-        console.error(error);
-        return res.status(500).json({
-            message: 'Internal server error',
-            success: false,
-            error: true
-        });
-    }
-});
+// Function to extract pincode from the back text
+function extractPincode(backText) {
+    const pincodeRegex = /\b\d{6}\b/;
+    const match = backText.match(pincodeRegex);
+    return match ? match[0] : 'Pincode not found';
+}
 
 
 /////////// to get all data from business db////////////////////////////////////////////////

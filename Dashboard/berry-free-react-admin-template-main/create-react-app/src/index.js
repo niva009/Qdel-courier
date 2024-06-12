@@ -14,6 +14,7 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import 'assets/scss/style.scss';
 import config from './config';
 import 'mdb-react-ui-kit/dist/css/mdb.min.css';
+import 'react-toastify/dist/ReactToastify.css';
 
 
 // ==============================|| REACT DOM RENDER  ||============================== //
@@ -22,7 +23,7 @@ const container = document.getElementById('root');
 const root = createRoot(container); // createRoot(container!) if you use TypeScript
 root.render(
   <Provider store={store}>
-    <BrowserRouter basename={config.basename}>
+    <BrowserRouter basename={config.basename}>s
       <App />
     </BrowserRouter>
   </Provider>

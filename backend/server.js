@@ -77,7 +77,7 @@ App.use('/api/register/', RegisterRouter);
 App.use('/api/', DeliveryRegisterRouter );
 App.use('/api/business/', BusinessRegistration);
 App.use('/api/warehouse/', BusinessRegistration);///// fetch warehouse data
-App.use('/api/updateBusiness/:id', BusinessRegistration);///// update warehosue data and change role 4 data
+App.use('/api/', BusinessRegistration);///// update warehosue data and change role 4 data
 App.use('/api/login',LoginRouter);
 App.use('/api/',RegisterRouter);
 App.use('/api/deliveryregistration',DeliveryRegisterRouter);/// to post deliverydb to databse 

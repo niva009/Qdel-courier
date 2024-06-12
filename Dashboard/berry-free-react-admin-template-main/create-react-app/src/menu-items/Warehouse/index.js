@@ -30,7 +30,7 @@ const Warehouse = {
           id: 'wareho-approved',
           title: 'Total Warehouse',
           type: 'item',
-          url: '/delivery/myorder',
+          url: '/ware-house/totalWarehouse',
           target: true
         },
       ]
