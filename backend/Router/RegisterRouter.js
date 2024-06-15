@@ -51,7 +51,7 @@ RegisterRouter.post('/', async (req, res) => {
     }
 });
 
-RegisterRouter.get('/reg', (req, res) => {
+RegisterRouter.get('/registerInfo', (req, res) => {
     RegisterDb.find()
         .then((data) => {
             res.status(200).json({
@@ -69,6 +69,30 @@ RegisterRouter.get('/reg', (req, res) => {
                 message: "Failed to fetch registration data"
             });
         });
+});
+
+RegisterRouter.put('/edit-register/:id', async (req, res) => {
+    const docId = req.params.id;
+
+    if (!docId) {
+        return res.status(404).json({ message: "ID not valid", success: false, error: true });
+    }
+
+    try {
+        const result = await RegisterDb.findByIdAndUpdate(
+            docId,
+            req.body,
+            { new: true }
+        );
+
+        if (!result) {
+            return res.status(400).json({ message: "Object not present", success: false, error: true });
+        }
+
+        return res.status(200).json({ message: "Object updated successfully", success: true, error: false, data: result });
+    } catch (error) {
+        return res.status(500).json({ message: "Internal server error", success: false, error: true, err: error.message });
+    }
 });
 
 

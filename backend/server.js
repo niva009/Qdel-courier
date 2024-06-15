@@ -16,6 +16,7 @@ const BusinessCourier = require( './Router/BusinessOrderRouter');
 const AddressRouter = require( './Router/AddressRouter');
 const BusinessRouter = require( './Router/BusinessRouter');
 const PaymentRouter = require( './Router/PaymentRouter')
+const DeliveryPartnerWindow = require('./Router/deliveryPartnerwindowRouter')
 
 const allowedOrigins = ['http://localhost:3000', 'http://localhost:3002'];
 
@@ -79,6 +80,7 @@ App.use('/api/business/', BusinessRegistration);
 App.use('/api/warehouse/', BusinessRegistration);///// fetch warehouse data
 App.use('/api/', BusinessRegistration);///// update warehosue data and change role 4 data
 App.use('/api/login',LoginRouter);
+App.use('/api/getdata',RegisterRouter);
 App.use('/api/',RegisterRouter);
 App.use('/api/deliveryregistration',DeliveryRegisterRouter);/// to post deliverydb to databse 
 App.use('/api/',CourierRegisterRouter);
@@ -118,6 +120,7 @@ App.use( '/api/', BusinessRouter); /////// http://localhost:3001/api/pckupdate/i
 App.use( '/api/', BusinessRouter);///////http://localhost:3001/api/changeCharge/
 App.use( '/api/', BusinessRouter); ///////http://localhost:3001/api/image-processing'// proces image for string information
 App.use('/api',BusinessRouter);
+App.use('/api/', DeliveryPartnerWindow);
 App.listen(port, () => {
     console.log(`server running on port ${port}`);
 });

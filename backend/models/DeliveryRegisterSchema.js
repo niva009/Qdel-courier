@@ -12,6 +12,8 @@ const DeliveryRegisterSchema = new Schema({ // Use Schema instead of mongoose.Sc
     password: { type: String, required: true },
     license_image: { type: String, required: true },
     aadhar_image: { type: String, required: true },
+    state:{ type: String, required:true},
+    district:{ type:String, required: true},
     user_image: { type: String, required: true },
     code:{ type:String, require:true},
     Role: { type: String }, // Default role is '3' for delivery partners

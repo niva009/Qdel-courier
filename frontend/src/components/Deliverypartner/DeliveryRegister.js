@@ -46,6 +46,12 @@ function DeliveryRegister() {
     }
   };
 
+  const stateDistrictsData = {
+    "Andhra Pradesh": ['Srikakulam','Parvathipuram Manyam','Vizianagaram','Visakhapatnam','Alluri Sitharama Raju','Anakapalli','Kakinada'],
+    "Kerala": ['kasargod','kannur','kozhiokode','wayanad','malapuram','ernakulam','palakkad','alapuzha','kollam','trivandrum','edukki','thrissur','Pathanamthitta','Kottayam'],
+    "TamilNadu": ['Ariyalur','Chengalpattu','Chennai','Coimbatore','Cuddalore','Dharmapuri','Dindigul','Erode','Kallakurichi','Kancheepuram','Karur','Krishnagiri','Madurai','Mayiladuthurai','Nagapattinam','Kanniyakumari','Namakkal','Perambalur','Pudukottai','Ramanathapuram','Ranipet','Salem','Sivagangai','Tenkasi','Thanjavur','Theni','Thiruvallur','Thiruvarur','Thoothukudi','Trichirappalli','Thirunelveli','Tirupathur','Tiruppur','Tiruvannamalai','The Nilgiris','Vellore','Viluppuram','Virudhunagar'],
+  }
+
 
   const validateField = (name, value) => {
     let errorMsg = "";
@@ -79,6 +85,8 @@ function DeliveryRegister() {
     formData.append('address', user.address);
     formData.append('password', user.password);
     formData.append('user_name', user.user_name);
+    formData.append('state',user.state);
+    formData.append('district',user.district);
     formData.append('license_number', user.license_number);
     formData.append('license_image',user.license_image );
     formData.append('aadhar_image', user.aadhar_image);
@@ -193,6 +201,43 @@ function DeliveryRegister() {
                   id="license number"
                   onChange={handleChange}
                 />
+              </Grid>
+              <Grid item xs={6}>
+                <TextField
+                  select
+                  required
+                  fullWidth
+                  name="state"
+                  label="State"
+                  id="state" 
+                  onChange={handleChange}
+                  SelectProps={{ native: true }}
+                >
+
+                  {Object.keys(stateDistrictsData).map((state, index) => (
+                    <option key={index} value={state}>
+                      {state}
+                    </option>
+                  ))}
+                </TextField>
+              </Grid>
+              <Grid item xs={6}>
+                <TextField
+                  select
+                  required  
+                  fullWidth
+                  name="district"
+                  label="District"
+                  id="district"
+                  onChange={handleChange}
+                  SelectProps={{ native: true }}
+                >
+                  {stateDistrictsData[user.state]?.map((district, index) => (
+                    <option key={index} value={district}>
+                      {district}
+                    </option>
+                  ))}
+                </TextField>
               </Grid>
               <Grid item xs={12}>
                 <TextField

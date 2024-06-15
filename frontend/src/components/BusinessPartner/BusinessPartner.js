@@ -12,7 +12,7 @@ import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
 import Typography from "@mui/material/Typography";
 import Container from "@mui/material/Container";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import axios from "axios";
 import NavbarOne from "../NavbarOne";
 import { ToastContainer, toast } from 'react-toastify';
@@ -24,24 +24,25 @@ function BusinessReg() {
     address: "",
     password: "",
     aadhar_number: "",
-    eamil: "",
+    email: "",
     aadhar_image: null,
     state: "",
     district:"",
+    lat:"",
+    long:"",
   });
-  const [ error, setError] = useState({
-    phone_number:"",
-    aadhar_number:"",
-    email:"",
-  })
-
-
+  
+  const [error, setError] = useState({
+    phone_number: "",
+    aadhar_number: "",
+    email: "",
+  });
 
   const stateDistrictsData = {
     "Andhra Pradesh": ['Srikakulam','Parvathipuram Manyam','Vizianagaram','Visakhapatnam','Alluri Sitharama Raju','Anakapalli','Kakinada'],
     "Kerala": ['kasargod','kannur','kozhiokode','wayanad','malapuram','ernakulam','palakkad','alapuzha','kollam','trivandrum','edukki','thrissur','Pathanamthitta','Kottayam'],
     "TamilNadu": ['Ariyalur','Chengalpattu','Chennai','Coimbatore','Cuddalore','Dharmapuri','Dindigul','Erode','Kallakurichi','Kancheepuram','Karur','Krishnagiri','Madurai','Mayiladuthurai','Nagapattinam','Kanniyakumari','Namakkal','Perambalur','Pudukottai','Ramanathapuram','Ranipet','Salem','Sivagangai','Tenkasi','Thanjavur','Theni','Thiruvallur','Thiruvarur','Thoothukudi','Trichirappalli','Thirunelveli','Tirupathur','Tiruppur','Tiruvannamalai','The Nilgiris','Vellore','Viluppuram','Virudhunagar'],
-  }
+  };
 
   const handleChange = (e) => {
     if (e.target.files) {
@@ -51,6 +52,30 @@ function BusinessReg() {
       validateField(e.target.name, e.target.value);
     }
   };
+
+  const apiKey = "AIzaSyA7iwZvlrBjdkqB51xMCP76foKkIeqG8co";
+
+  useEffect(() => {
+    const fetchLocation = async () => {
+      try {
+        if (user.zipcode) {
+          const response = await axios.get(`https://maps.googleapis.com/maps/api/geocode/json?address=${user.zipcode}&key=${apiKey}`);
+          const { lat, lng } = response.data.results[0].geometry.location;
+          setUser(prevUser => ({
+            ...prevUser,
+            lat: lat,
+            long: lng
+          }));
+        } else {
+          console.log("zipcode is undefined");
+        }
+      } catch (error) {
+        console.log(error);
+      }
+    };
+
+    fetchLocation();
+  }, [user.zipcode, apiKey]);
 
   const validateField  = (name, value) => {
     let errorMsg = "";
@@ -73,44 +98,39 @@ function BusinessReg() {
     setError({ ...error, [name]: errorMsg });
   };
 
-
   const handleSubmit = (e) => {
     e.preventDefault();
 
-    const formData =  new FormData();
-    formData.append('name',user.name);
-    formData.append('user_name',user.user_name);
+    const formData = new FormData();
+    formData.append('name', user.name);
+    formData.append('user_name', user.user_name);
     formData.append('phone_number', user.phone_number);
     formData.append('address', user.address);
     formData.append('password', user.password);
     formData.append('aadhar_number', user.aadhar_number);
     formData.append('email', user.email);
-    formData.append('state', user.state);
+    formData.append('zipcode', user.zipcode);
     formData.append('district', user.district);
-    formData.append('aadhar_image',user.aadhar_image );
+    formData.append('aadhar_image', user.aadhar_image);
+    formData.append('lat', user.lat);
+    formData.append('long', user.long);
 
     axios.post('http://localhost:3001/api/business/businessreg', formData)
-    
       .then((response) => {
         console.log(response);
-        toast.success("your Registration Completed successfully you will get an approval email from admin Thank You",{
-
-        });
-        setTimeout(() =>{
+        toast.success("Your registration completed successfully. You will get an approval email from admin. Thank you!", {});
+        setTimeout(() => {
           window.location.reload();
-        },3000);
+        }, 3000);
       })
       .catch((error) => {
         console.log(error, "something went wrong");
-        toast.error("Registration failed",error);
-        setTimeout(() =>{
+        toast.error("Registration failed", error);
+        setTimeout(() => {
           window.location.reload();
-        },2000);
+        }, 2000);
       });
   };
-
- 
-
 
   return (
     <ThemeProvider theme={createTheme()}>
@@ -174,6 +194,17 @@ function BusinessReg() {
                   error={!!error.email}
                   helperText={error.email ? "Enter valid email address.":""}
                   autoComplete="phone email"
+                  onChange={handleChange}
+                />
+              </Grid>
+              <Grid item xs={12}>
+                <TextField
+                  required
+                  fullWidth
+                  name="zipcode"
+                  label=" Pincode"
+                  type="string"
+                  id="pin-code"
                   onChange={handleChange}
                 />
               </Grid>

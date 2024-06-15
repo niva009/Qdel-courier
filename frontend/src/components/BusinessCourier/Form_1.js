@@ -9,7 +9,6 @@ import Button from '@mui/material/Button'; // Add this import
 import NavbarOne from '../NavbarOne';
 import { jwtDecode } from "jwt-decode";
 import axios from 'axios';
-import Buton from 'react-bootstrap/Button';
 import Form from 'react-bootstrap/Form';
 import Modal from 'react-bootstrap/Modal';
 import ContactsIcon from '@mui/icons-material/Contacts';
@@ -22,10 +21,33 @@ import TableRow from '@mui/material/TableRow';
 import Paper from '@mui/material/Paper';
 import { useNavigate} from "react-router-dom";
 import { MdCloudUpload } from "react-icons/md";
-import { ToastContainer, toast } from 'react-toastify';
+import { ToggleButton, ToggleButtonGroup } from '@mui/material';
 
 
-const UploadModal = ({ show, onHide, handleUpload, handleFileChange1, handleFileChange2, handleDrop1, handleDrop2, handleDragOver, file1, file2 }) => {
+const UploadModal = ({
+  show,
+  onHide,
+  handleUpload,
+  handleCardTypeChange, // Add handleCardTypeChange prop here
+  handleFileChange1,
+  handleFileChange2,
+  handleDrop1,
+  handleDrop2,
+  handleDragOver,
+  file1,
+  file2,
+  cardType
+}) => {
+
+  const activeStyle = {
+    backgroundColor: 'orange',
+    color: 'white'
+  };
+
+  const inactiveStyle = {
+    backgroundColor: 'white',
+    color: 'black'
+  };
   return (
     <Modal
       size="lg"
@@ -36,11 +58,34 @@ const UploadModal = ({ show, onHide, handleUpload, handleFileChange1, handleFile
     >
       <Modal.Header closeButton>
         <Modal.Title style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-          Upload AAdhar Card Image Here
+          Upload {cardType === 'aadhar' ? 'Aadhar' : 'ID'} Card Image Here
         </Modal.Title>
       </Modal.Header>
       <Modal.Body>
-        <p>We don't save and share your Aadhar card image and data.</p>
+        <p>We don't save and share your {cardType} card image and data.</p>
+        <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '20px' }}>
+        <ToggleButtonGroup
+            value={cardType}
+            exclusive
+            onChange={handleCardTypeChange}
+            aria-label="card type"
+          >
+            <ToggleButton
+              value="aadhar"
+              aria-label="aadhar card"
+              style={cardType === 'aadhar' ? activeStyle : inactiveStyle}
+            >
+              Aadhar Card
+            </ToggleButton>
+            <ToggleButton
+              value="id"
+              aria-label="id card"
+              style={cardType === 'id' ? activeStyle : inactiveStyle}
+            >
+              ID Card
+            </ToggleButton>
+          </ToggleButtonGroup>
+        </div>
         <div style={{ display: 'flex', justifyContent: 'space-around' }}>
           <div
             style={{
@@ -55,7 +100,7 @@ const UploadModal = ({ show, onHide, handleUpload, handleFileChange1, handleFile
             onDrop={handleDrop1}
             onDragOver={handleDragOver}
           >
-            {file1 ? <p>{file1.name}</p> : <p>Drag & Drop front side of the Aadhar Image</p>}
+            {file1 ? <p>{file1.name}</p> : <p>Drag & Drop front side of the {cardType} Image</p>}
             <input type="file" onChange={handleFileChange1} style={{ display: 'none' }} id="fileInput1" />
             <label htmlFor="fileInput1" style={{ cursor: 'pointer' }}>or choose file</label>
           </div>
@@ -72,19 +117,18 @@ const UploadModal = ({ show, onHide, handleUpload, handleFileChange1, handleFile
             onDrop={handleDrop2}
             onDragOver={handleDragOver}
           >
-            {file2 ? <p>{file2.name}</p> : <p>Drag & Drop back side of the Aadhar Image</p>}
+            {file2 ? <p>{file2.name}</p> : <p>Drag & Drop back side of the {cardType} Image</p>}
             <input type="file" onChange={handleFileChange2} style={{ display: 'none' }} id="fileInput2" />
             <label htmlFor="fileInput2" style={{ cursor: 'pointer' }}>or choose file</label>
           </div>
         </div>
       </Modal.Body>
       <Modal.Footer>
-        <Button  style={{padding:'10px 20px',color:'white',backgroundColor:'orange',border:'none'}} onClick={handleUpload}>Upload</Button>
+        <Button style={{ padding: '10px 20px', color: 'white', backgroundColor: 'orange', border: 'none' }} onClick={handleUpload}>Upload</Button>
       </Modal.Footer>
     </Modal>
   );
 };
-
 
 
 
@@ -134,16 +178,11 @@ const Form_1 = () =>{
       const [dataFromCard,setDataFromCard] = useState({ name: '', address:'', zipcode:''});
       const [fromLocationInfo,setFromLocationInfo] = useState('');
       const [toLocationInfo, setToLocationInfo] = useState('')
+      const [cardType, setCardType] = useState('aadhar');
 
 
       ////////////////////this  code user data from aadhar and fill the form ///////////////////
 
-
-      const showTostMessage =() =>{
-        toast(" First step completed successfully !", {
-          position: toast.POSITION.BOTTOM_LEFT,
-        });
-      }
       
   const handleFileChange1 = (e) => {
     setFile1(e.target.files[0]);
@@ -166,17 +205,27 @@ const Form_1 = () =>{
   const handleDragOver = (e) => {
     e.preventDefault();
   };
+  const handleCardTypeChange = (event, newCardType) => {
+    if (newCardType !== null) {
+      setCardType(newCardType);
+    }
+  };
 
   const handleUpload = () => {
     const formData = new FormData();
     if (file1) formData.append('uploadedImages', file1);
     if (file2) formData.append('uploadedImages', file2);
-
-    axios.post('http://localhost:3001/api/image-processing', formData)
+  
+    const endpoint = cardType === 'aadhar'
+      ? 'http://localhost:3001/api/image-processing'
+      : 'http://localhost:3001/api/idcard-processing';
+  
+    axios.post(endpoint, formData)
       .then(response => {
-        const { name, address, zipcode} = response.data.data
-        setDataFromCard({name, address, zipcode});
-        alert(`Name: ${response.data.data.name} Address: ${response.data.data.address}\n zipcode: ${response.data.data.zipcode}`);
+        console.log(response, "response from id card");
+        const { name, address, zipcode } = response.data.data;
+        setDataFromCard({ name, address, zipcode });
+        alert(`Name: ${response.data.data.name} Address: ${response.data.data.address}\nzipcode: ${response.data.data.zipcode}`);
       })
       .catch(error => {
         console.error('There was an error uploading the files!', error.message);
@@ -185,21 +234,21 @@ const Form_1 = () =>{
         setModalShow(false);
       });
   };
+  
 
   console.log(dataFromCard,"data are here");
 
 
 
 /////////////////////update form state when DataFromCard are change //////////////////////////
-  useEffect(() => {
-    setForm(prevForm => ({
-      ...prevForm,
-      from_name: dataFromCard.name,
-      from_address: dataFromCard.address,
-      from_zipcode: dataFromCard.zipcode,
-    }));
-  }, [dataFromCard])
-
+useEffect(() => {
+  setForm(prevForm => ({
+    ...prevForm,
+    from_name: dataFromCard.name,
+    from_address: dataFromCard.address,
+    from_zipcode: dataFromCard.zipcode,
+  }));
+}, [dataFromCard]);
 
 
 
@@ -379,7 +428,7 @@ console.log(toLocationInfo,"to state");
             setError(error);
           });
       };
-      
+
       console.log(form,"form data storage");
       const saveFormData = () =>{
         try{
@@ -441,6 +490,7 @@ console.log(toLocationInfo,"to state");
         handleUpload={handleUpload}
         handleFileChange1={handleFileChange1}
         handleFileChange2={handleFileChange2}
+        handleCardTypeChange={handleCardTypeChange}
         handleDrop1={handleDrop1}
         handleDrop2={handleDrop2}
         handleDragOver={handleDragOver}
@@ -712,7 +762,6 @@ console.log(toLocationInfo,"to state");
             <Button onClick={submitAddress}>Save this address to address book</Button>
 
           </FormGrid>
-      <ToastContainer />
         </div> 
       </Grid>
     </Grid>

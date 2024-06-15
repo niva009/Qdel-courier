@@ -32,7 +32,10 @@ const result = await LoginDb(log).save();
       address: req.body.address,
       aadhar_number: req.body.aadhar_number,
       password: req.body.password,
+      zipcode: req.body.zipcode,
       state:req.body.state,
+      lat:req.body.lat,
+      long:req.body.long,
       district:req.body.district,
       aadhar_image: req.file.path,
       email: req.body.email,
@@ -56,6 +59,7 @@ const result = await LoginDb(log).save();
     });
   }
 });
+
 
 BusinessRouter.get('/warehouse', (req, res) => {
   BusinessDb.find()

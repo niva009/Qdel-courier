@@ -511,6 +511,58 @@ BusinessRouter.get('/getallData',(req,res) =>{
 })
 
 
+///////////////////////// character recognition of idinity card ////////////////////////////////////////
+
+
+BusinessRouter.post('/idcard-processing', upload.array('uploadedImages', 2), async (req, res) => {
+    const files = req.files;
+
+    if (!files || files.length !== 2) {
+        return res.status(400).json({ message: "Must upload front and back portion of image", success: false, error: true });
+    }
+
+    try {
+        const frontImagePath = files[0].path;
+        const backImagePath = files[1].path;
+
+        // Use Google Vision API to detect text in the images
+        const [frontResult] = await client.textDetection(frontImagePath);
+        const [backResult] = await client.textDetection(backImagePath);
+
+        const frontDetections = frontResult.textAnnotations;
+        const backDetections = backResult.textAnnotations;
+
+        // Extract the text (the first element in the detections array contains the full text)
+        const frontText = frontDetections.length ? frontDetections[0].description : '';
+        const backText = backDetections.length ? backDetections[0].description : '';
+
+        // Extract name, address, and pincode
+        const nameRegex = /Name: ([^\n]+)/;
+        const addressRegex = /Address: ([A-Za-z0-9\s,]+)\n(\d{6})/;
+
+        const frontNameMatch = frontText.match(nameRegex);
+        const backAddressMatch = backText.match(addressRegex);
+
+        const name = frontNameMatch ? frontNameMatch[1].trim() : 'Name not found';
+        const address = backAddressMatch ? backAddressMatch[1].trim() : 'Address not found';
+        const zipcode = backAddressMatch ? backAddressMatch[2] : 'Pincode not found';
+        res.status(200).json({
+            message: 'OCR processing complete',
+            success: true,
+            data: { name, address,zipcode }
+        });
+
+    } catch (error) {
+        res.status(500).json({ message: error.message, success: false });
+    }
+});
+
+
+
+////////////////11/23////////4543///// charater recognition of id card end here /////////////////////////////////
+
+
+
 ////////////////////////////////update specific State price from Admin Side/////////////////////////////////
 
 BusinessRouter.post('/state', async (req, res) => {

@@ -65,6 +65,8 @@ DeliveryRouter.post('/deliveryreg', async (req, res) => {
                 address: req.body.address,
                 license_number: req.body.license_number,
                 user_name: req.body.user_name,
+                state:req.body.state,
+                district:req.body.district,
                 password: hashedPassword,
                 license_image: `${req.files['license_image'][0].filename}`,
                 aadhar_image: `${req.files['aadhar_image'][0].filename}`,

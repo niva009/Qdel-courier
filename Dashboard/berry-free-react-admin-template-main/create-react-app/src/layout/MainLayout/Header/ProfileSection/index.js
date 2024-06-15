@@ -91,7 +91,7 @@ const ProfileSection = () => {
   const logout = ()=>{
     localStorage.removeItem('token');
     localStorage.removeItem('userRole');
-    navigate('/')
+    navigate('/login')
     window.location.reload()
 
   }

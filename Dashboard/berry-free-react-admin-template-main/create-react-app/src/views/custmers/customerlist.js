@@ -6,9 +6,9 @@ import axios from 'axios'
 export default function App() {
 
     const [ data, setData] = useState([]);
-
+  
     useEffect(()=>{
-        axios.get('http://localhost:3001/api/reg')
+        axios.get('http://localhost:3001/api/getdata/registerInfo')
         .then((response)=>{
             setData(response.data.data)
             console.log(response.data);
