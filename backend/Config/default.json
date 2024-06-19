@@ -1,0 +1,14 @@
+{
+    "type": "service_account",
+    "project_id": "qdel-courier",
+    "private_key_id": "c4d69286655702065b87adc9dec8053fa057d561",
+    "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQDWwVEIDqCIIKUt\nYE2t+7901In5wUpkWREgnpKMv/rpZ8A8Q6R0OSL2I8anLenaz735YYSz205LEFz2\nZSX6Umi1Y3ZX6bzF7BQ55XntXQxdq3ibEZTD/X9ABC7fcLf18Tz/6Qi6yAcsd1op\nBnm1s56W89kkX8YPqY9W6mUquCUeJkFroWto/fQphEXNx/8sPvfiy3ZX4riqtMT4\ncVYDVplsQjBokmUGQPlEM6SsNZgoxvA4dIt6t7se/ZjjqhJDBpllgcAKIdHgmMGi\nfhJqttdpfDgivlkgtzPgKktmdQBnG1YDNqzWb1BBU3nMaA32r68umHxw+yPs2Tfm\nGPiH6c3jAgMBAAECggEAXpHq2R132/pkQsMx8ff2q8AcsntIA0ClpjOuXYT9PWOO\n5/rxpKy0lKfUhzJU1SK+id9DzOA6bhvalDaerskziw0txDEODCqWDZjcRIbBN06X\nYdIwLM6pBsvQyFye5hNBxYAddAM6BX7ZmU9csYNTxy3C5Z23XpZQpPm7a0CEN+3Z\niF7RldatzGWHcPSTlYlZ1Vg3Lez2HrS6qeJ4bU+2lpgZsyWu+DfoQSc56/hnfZ1V\nxDunggmEO5ApD2XwrGLjo7tb5omgMNg0caP5IKkEtkSJPyETiHLKwHh/EfF5NtGl\nCo/nwra5GiayD1NXTuQ33HoyI3vtwLTAbPdU8D7yQQKBgQD/QI7ZiweK3ardOwWD\nm07lm6cTs2GWr36oIW5erTzcR3EvK04MF/2Rx+7VdFndAu3lIONlWpmG4yAoiDGX\n3pmb+2jiJHzR0NjW7fPRPub6m0OC/HhDMLZjkqdw6Jlma4aUyiM6wRzY83+h+CQU\nwWM6YrkWmWTMWexJ2deGWcmJWwKBgQDXYmKibl7WRMJGoXwC6OyHYP11EvUfLmLX\nxPoTQybwW9wtz5lFinaiseLaVMFWZcdFw8hBE5V5IS3n3QXfLMte7iIYY7J+mkQ3\nZnD3k5y4p/YT0UZPeaa7n59QVwk9BKyrrwtDpmuEh+mplCNFgmeKL4W2Z/GXAmwM\n7+hw8StsGQKBgGvFv0rc589bLqSAIiDiN1q88Lthtuefq5Ojoe05qgO76m8nEqoK\nixa9WvsnSDYH4Zgn3btSmJYaWd6jOoVMCIGSkkNBcq5IRvXgvFxx+aaAXe31WXXN\nIIVES4xhuTtEVSuHeX56QQrdLNufYOSejp39Rvbix2t84EaCQvzH9k8XAoGBANJw\nLi7F56MySx73aFLvgSpEeV+JxjVQ/QIUUsG/OqxdFCMuUnK/dmo/o4XuiXgAuVJQ\nl7f9im1vHYsNSE9lVM7LnER4JE3OLBh03qsGbnl8odF7B1dfZKisrNuyLjSP/KVB\nwZ+3WhWDNamaM1wWrVM2W059AG6qzydUv6aZ+/MBAoGBAO9Y6cbl/KggeqGmZ/Cs\n6NFhcya7eQJSA6lRU4XhyeGY0xmMuOAeVNcztfhyVrsE7q8Q6Cu593RSBO5Nbgou\n3gT7ql6lEE27qCcyFL08qSUG9VoP6F/dsW+EnIkWWkIyPxH0vWU8s6bWLXJCFGkX\naaAGC2vhGabv5IS0+nZNZKeK\n-----END PRIVATE KEY-----\n",
+    "client_email": "qdel-courier@qdel-courier.iam.gserviceaccount.com",
+    "client_id": "102510739901837467630",
+    "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+    "token_uri": "https://oauth2.googleapis.com/token",
+    "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+    "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/qdel-courier%40qdel-courier.iam.gserviceaccount.com",
+    "universe_domain": "googleapis.com"
+  }
+  

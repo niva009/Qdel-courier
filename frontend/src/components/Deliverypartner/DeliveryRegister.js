@@ -12,12 +12,18 @@ import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
 import Typography from "@mui/material/Typography";
 import Container from "@mui/material/Container";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
-import { useState } from "react";
+import { useState,useEffect } from "react";
 import axios from "axios";
 import NavbarOne from "../NavbarOne";
 import { ToastContainer, toast } from 'react-toastify';
 
 function DeliveryRegister() {
+
+  const [locationInfo ,setLocationInfo] = useState({
+
+    district:"",
+    state:"",
+});
 
   const [user, setUser] = useState({
     name: "",
@@ -26,6 +32,11 @@ function DeliveryRegister() {
     address: "",
     license_number: "",
     password: "",
+    zipcode:"",
+    location: {
+      type: 'Point',
+      coordinates: []
+    },
     license_image: null,
     aadhar_image: null,
     user_image: null,
@@ -45,13 +56,6 @@ function DeliveryRegister() {
       validateField(e.target.name, e.target.value);
     }
   };
-
-  const stateDistrictsData = {
-    "Andhra Pradesh": ['Srikakulam','Parvathipuram Manyam','Vizianagaram','Visakhapatnam','Alluri Sitharama Raju','Anakapalli','Kakinada'],
-    "Kerala": ['kasargod','kannur','kozhiokode','wayanad','malapuram','ernakulam','palakkad','alapuzha','kollam','trivandrum','edukki','thrissur','Pathanamthitta','Kottayam'],
-    "TamilNadu": ['Ariyalur','Chengalpattu','Chennai','Coimbatore','Cuddalore','Dharmapuri','Dindigul','Erode','Kallakurichi','Kancheepuram','Karur','Krishnagiri','Madurai','Mayiladuthurai','Nagapattinam','Kanniyakumari','Namakkal','Perambalur','Pudukottai','Ramanathapuram','Ranipet','Salem','Sivagangai','Tenkasi','Thanjavur','Theni','Thiruvallur','Thiruvarur','Thoothukudi','Trichirappalli','Thirunelveli','Tirupathur','Tiruppur','Tiruvannamalai','The Nilgiris','Vellore','Viluppuram','Virudhunagar'],
-  }
-
 
   const validateField = (name, value) => {
     let errorMsg = "";
@@ -74,6 +78,76 @@ function DeliveryRegister() {
     setError({ ...error, [name]: errorMsg });
   };
 
+
+  const apiKeys = 'AIzaSyA7iwZvlrBjdkqB51xMCP76foKkIeqG8co';
+
+  useEffect(() => {
+    const fetchLocation = async () => {
+      try {
+        if (user.zipcode) {
+          const response = await axios.get(`https://maps.googleapis.com/maps/api/geocode/json?address=${user.zipcode}&key=${apiKeys}`);
+          const { lat, lng } = response.data.results[0].geometry.location;
+          setUser(prevUser => ({
+            ...prevUser,
+            location: {
+              type: 'Point',
+              coordinates: [lng, lat]
+            }
+          }));
+        } else {
+          console.log("zipcode is undefined");
+        }
+      } catch (error) {
+        console.log(error);
+      }
+    };
+
+    fetchLocation();
+  }, [user.zipcode]);
+
+  useEffect(() => {
+    const fetchAddress = async () => {
+      try {
+        if (user.zipcode) {
+          const response = await axios.get(`https://maps.googleapis.com/maps/api/geocode/json?key=${apiKeys}&address=${user.zipcode}`);
+          const addressData = response.data;
+          const addressComponents = addressData.results[0].address_components;
+
+          let district = '';
+          let state = '';
+
+          addressComponents.forEach((component) => {
+            if (component.types.includes('locality') || component.types.includes('administrative_area_level_2') || component.types.includes('administrative_area_level_3')) {
+              district = component.long_name;
+            } else if (component.types.includes('administrative_area_level_1')) {
+              state = component.long_name;
+            }
+          });
+          if (district || state !== "") {
+            setLocationInfo({
+              district,
+              state
+            });
+          } else {
+            console.log("district or state is undefined");
+          }
+        }
+      } catch (error) {
+        console.log(error, 'address error');
+      }
+    };
+
+    fetchAddress();
+  }, [user.zipcode]);
+
+  useEffect(() => {
+    setUser(prevForm => ({
+      ...prevForm,
+      district: locationInfo.district,
+      state: locationInfo.state
+    }));
+  }, [locationInfo]);
+
   const handleSubmit = (e) => {
     e.preventDefault();
 
@@ -85,12 +159,15 @@ function DeliveryRegister() {
     formData.append('address', user.address);
     formData.append('password', user.password);
     formData.append('user_name', user.user_name);
+    formData.append('zipcode',user.zipcode);
+    formData.append( 'location',JSON.stringify(user.location))
     formData.append('state',user.state);
     formData.append('district',user.district);
     formData.append('license_number', user.license_number);
     formData.append('license_image',user.license_image );
     formData.append('aadhar_image', user.aadhar_image);
     formData.append('user_image', user.user_image);
+
 
 
     axios.post('http://localhost:3001/api/deliveryreg', formData)
@@ -193,6 +270,17 @@ function DeliveryRegister() {
                 <TextField
                   required
                   fullWidth
+                  name="zipcode"
+                  label="Pincode"
+                  type="string"
+                  id="pin-code"
+                  onChange={handleChange}
+                />
+              </Grid>
+              <Grid item xs={12}>
+                <TextField
+                  required
+                  fullWidth
                   name="license_number"
                   label="Driving License Number"
                   type="string"
@@ -204,39 +292,24 @@ function DeliveryRegister() {
               </Grid>
               <Grid item xs={6}>
                 <TextField
-                  select
-                  required
                   fullWidth
                   name="state"
                   label="State"
                   id="state" 
+                  value={user.state}
                   onChange={handleChange}
-                  SelectProps={{ native: true }}
                 >
-
-                  {Object.keys(stateDistrictsData).map((state, index) => (
-                    <option key={index} value={state}>
-                      {state}
-                    </option>
-                  ))}
                 </TextField>
               </Grid>
               <Grid item xs={6}>
                 <TextField
-                  select
-                  required  
                   fullWidth
                   name="district"
                   label="District"
+                  value={user.district}
                   id="district"
                   onChange={handleChange}
-                  SelectProps={{ native: true }}
                 >
-                  {stateDistrictsData[user.state]?.map((district, index) => (
-                    <option key={index} value={district}>
-                      {district}
-                    </option>
-                  ))}
                 </TextField>
               </Grid>
               <Grid item xs={12}>

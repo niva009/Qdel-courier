@@ -11,7 +11,12 @@ const DeliveryRegisterSchema = new Schema({ // Use Schema instead of mongoose.Sc
     user_name: { type: String, required: true },
     password: { type: String, required: true },
     license_image: { type: String, required: true },
+    zipcode:{ type:String, require:true},
     aadhar_image: { type: String, required: true },
+    location: {
+        type: { type: String, enum: ['Point'], require: true },
+        coordinates: { type: [Number], require: true }
+    },
     state:{ type: String, required:true},
     district:{ type:String, required: true},
     user_image: { type: String, required: true },

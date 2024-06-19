@@ -121,6 +121,9 @@ App.use( '/api/', BusinessRouter);///////http://localhost:3001/api/changeCharge/
 App.use( '/api/', BusinessRouter); ///////http://localhost:3001/api/image-processing'// proces image for string information
 App.use('/api',BusinessRouter);
 App.use('/api/', DeliveryPartnerWindow);
+App.use('/api/userapproval/', DeliveryPartnerWindow);
+App.use('/api/orderHistory/', DeliveryPartnerWindow);
+App.use('/api/status-updation/', DeliveryPartnerWindow);
 App.listen(port, () => {
     console.log(`server running on port ${port}`);
 });

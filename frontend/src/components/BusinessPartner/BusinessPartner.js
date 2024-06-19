@@ -18,6 +18,7 @@ import NavbarOne from "../NavbarOne";
 import { ToastContainer, toast } from 'react-toastify';
 
 function BusinessReg() {
+  const [locationInfo, setLocationInfo] = useState({});
   const [user, setUser] = useState({
     name: "",
     phone_number: "",
@@ -27,22 +28,20 @@ function BusinessReg() {
     email: "",
     aadhar_image: null,
     state: "",
+    zipcode:"",
     district:"",
-    lat:"",
-    long:"",
+    location: {
+      type: 'Point',
+      coordinates: []
+    },
+    user_name: ""
   });
-  
+
   const [error, setError] = useState({
     phone_number: "",
     aadhar_number: "",
     email: "",
   });
-
-  const stateDistrictsData = {
-    "Andhra Pradesh": ['Srikakulam','Parvathipuram Manyam','Vizianagaram','Visakhapatnam','Alluri Sitharama Raju','Anakapalli','Kakinada'],
-    "Kerala": ['kasargod','kannur','kozhiokode','wayanad','malapuram','ernakulam','palakkad','alapuzha','kollam','trivandrum','edukki','thrissur','Pathanamthitta','Kottayam'],
-    "TamilNadu": ['Ariyalur','Chengalpattu','Chennai','Coimbatore','Cuddalore','Dharmapuri','Dindigul','Erode','Kallakurichi','Kancheepuram','Karur','Krishnagiri','Madurai','Mayiladuthurai','Nagapattinam','Kanniyakumari','Namakkal','Perambalur','Pudukottai','Ramanathapuram','Ranipet','Salem','Sivagangai','Tenkasi','Thanjavur','Theni','Thiruvallur','Thiruvarur','Thoothukudi','Trichirappalli','Thirunelveli','Tirupathur','Tiruppur','Tiruvannamalai','The Nilgiris','Vellore','Viluppuram','Virudhunagar'],
-  };
 
   const handleChange = (e) => {
     if (e.target.files) {
@@ -53,18 +52,20 @@ function BusinessReg() {
     }
   };
 
-  const apiKey = "AIzaSyA7iwZvlrBjdkqB51xMCP76foKkIeqG8co";
+  const apiKeys = 'AIzaSyA7iwZvlrBjdkqB51xMCP76foKkIeqG8co';
 
   useEffect(() => {
     const fetchLocation = async () => {
       try {
         if (user.zipcode) {
-          const response = await axios.get(`https://maps.googleapis.com/maps/api/geocode/json?address=${user.zipcode}&key=${apiKey}`);
+          const response = await axios.get(`https://maps.googleapis.com/maps/api/geocode/json?address=${user.zipcode}&key=${apiKeys}`);
           const { lat, lng } = response.data.results[0].geometry.location;
           setUser(prevUser => ({
             ...prevUser,
-            lat: lat,
-            long: lng
+            location: {
+              type: 'Point',
+              coordinates: [lng, lat]
+            }
           }));
         } else {
           console.log("zipcode is undefined");
@@ -75,9 +76,52 @@ function BusinessReg() {
     };
 
     fetchLocation();
-  }, [user.zipcode, apiKey]);
+  }, [user.zipcode]);
 
-  const validateField  = (name, value) => {
+  useEffect(() => {
+    const fetchAddress = async () => {
+      try {
+        if (user.zipcode) {
+          const response = await axios.get(`https://maps.googleapis.com/maps/api/geocode/json?key=${apiKeys}&address=${user.zipcode}`);
+          const addressData = response.data;
+          const addressComponents = addressData.results[0].address_components;
+
+          let district = '';
+          let state = '';
+
+          addressComponents.forEach((component) => {
+            if (component.types.includes('locality') || component.types.includes('administrative_area_level_2') || component.types.includes('administrative_area_level_3')) {
+              district = component.long_name;
+            } else if (component.types.includes('administrative_area_level_1')) {
+              state = component.long_name;
+            }
+          });
+          if (district || state !== "") {
+            setLocationInfo({
+              district,
+              state
+            });
+          } else {
+            console.log("district or state is undefined");
+          }
+        }
+      } catch (error) {
+        console.log(error, 'address error');
+      }
+    };
+
+    fetchAddress();
+  }, [user.zipcode]);
+
+  useEffect(() => {
+    setUser(prevForm => ({
+      ...prevForm,
+      district: locationInfo.district,
+      state: locationInfo.state
+    }));
+  }, [locationInfo]);
+
+  const validateField = (name, value) => {
     let errorMsg = "";
     switch (name) {
       case "phone_number":
@@ -89,8 +133,8 @@ function BusinessReg() {
         errorMsg = emailRegex.test(value) ? "" : "Invalid email address";
         break;
       case "aadhar_number":
-        const AaadharRegex = /^[0-9]{16}$/;
-        errorMsg = AaadharRegex.test(value) ? "" : "Enter Valid Aadhar Number"; 
+        const aadharRegex = /^[0-9]{12}$/;
+        errorMsg = aadharRegex.test(value) ? "" : "Enter Valid Aadhar Number"; 
         break;
       default:
         break;
@@ -112,26 +156,25 @@ function BusinessReg() {
     formData.append('zipcode', user.zipcode);
     formData.append('district', user.district);
     formData.append('aadhar_image', user.aadhar_image);
-    formData.append('lat', user.lat);
-    formData.append('long', user.long);
+    formData.append('location', JSON.stringify(user.location));
+    formData.append('state', user.state);
 
     axios.post('http://localhost:3001/api/business/businessreg', formData)
       .then((response) => {
         console.log(response);
         toast.success("Your registration completed successfully. You will get an approval email from admin. Thank you!", {});
-        setTimeout(() => {
+        setTimeout = (() =>{
           window.location.reload();
-        }, 3000);
+        },3000)
       })
       .catch((error) => {
         console.log(error, "something went wrong");
         toast.error("Registration failed", error);
-        setTimeout(() => {
+        setTimeout = (() =>{
           window.location.reload();
-        }, 2000);
+        },3000)
       });
   };
-
   return (
     <ThemeProvider theme={createTheme()}>
       <NavbarOne />
@@ -155,7 +198,7 @@ function BusinessReg() {
           <Box
             component="form"
             onSubmit={handleSubmit}
-            encType="multPart/formData"
+            encType="multipart/form-data"
             sx={{ mt: 1 }}
           >
             <Grid container spacing={2}>
@@ -188,12 +231,12 @@ function BusinessReg() {
                 <TextField
                   required
                   fullWidth
-                  id="email_address"
-                  label="email"
+                  id="email"
+                  label="Email"
                   name="email"
                   error={!!error.email}
                   helperText={error.email ? "Enter valid email address.":""}
-                  autoComplete="phone email"
+                  autoComplete="email"
                   onChange={handleChange}
                 />
               </Grid>
@@ -202,7 +245,7 @@ function BusinessReg() {
                   required
                   fullWidth
                   name="zipcode"
-                  label=" Pincode"
+                  label="Pincode"
                   type="string"
                   id="pin-code"
                   onChange={handleChange}
@@ -220,52 +263,38 @@ function BusinessReg() {
               </Grid>
               <Grid item xs={6}>
                 <TextField
-                  select
                   required
                   fullWidth
                   name="state"
                   label="State"
                   id="state" 
                   onChange={handleChange}
-                  SelectProps={{ native: true }}
+                  value={user.state}
                 >
-
-                  {Object.keys(stateDistrictsData).map((state, index) => (
-                    <option key={index} value={state}>
-                      {state}
-                    </option>
-                  ))}
                 </TextField>
               </Grid>
               <Grid item xs={6}>
                 <TextField
-                  select
                   required  
                   fullWidth
                   name="district"
                   label="District"
                   id="district"
+                  value={user.district}
                   onChange={handleChange}
-                  SelectProps={{ native: true }}
                 >
-                  {stateDistrictsData[user.state]?.map((district, index) => (
-                    <option key={index} value={district}>
-                      {district}
-                    </option>
-                  ))}
                 </TextField>
               </Grid>
-    
               <Grid item xs={12}>
                 <TextField
                   required
                   fullWidth
                   name="aadhar_number"
-                  label="aadhar Card Number "
+                  label="Aadhar Card Number"
                   error={!!error.aadhar_number}
-                  helperText={error.aadhar_number ? "Enter valid License Number.":""}
+                  helperText={error.aadhar_number ? "Enter valid Aadhar Number.":""}
                   type="string"
-                  id="aadhar -card"
+                  id="aadhar-card"
                   onChange={handleChange}
                 />
               </Grid>
@@ -274,9 +303,9 @@ function BusinessReg() {
                   required
                   fullWidth
                   id="user_name"
-                  label="user Name"
+                  label="User Name"
                   name="user_name"
-                  autoComplete="phone email"
+                  autoComplete="username"
                   onChange={handleChange}
                 />
               </Grid>
@@ -292,26 +321,26 @@ function BusinessReg() {
                 />
               </Grid>
               <ToastContainer
-          position="top-right"
-          autoClose={3000}
-          hideProgressBar={false}
-          newestOnTop={false}
-          closeOnClick
-          rtl={false}
-          pauseOnFocusLoss
-          draggable
-          pauseOnHover
-          theme="light"
-          />
+                position="top-right"
+                autoClose={3000}
+                hideProgressBar={false}
+                newestOnTop={false}
+                closeOnClick
+                rtl={false}
+                pauseOnFocusLoss
+                draggable
+                pauseOnHover
+                theme="light"
+              />
               <Grid item xs={12}>
-                <label>Upload  aadhar card</label>
-            <TextField
-               type="file"
-               name="aadhar_image"
-               onChange={handleChange}
-               accept="image/png, image/jpg"
+                <label>Upload Aadhar Card</label>
+                <TextField
+                  type="file"
+                  name="aadhar_image"
+                  onChange={handleChange}
+                  accept="image/png, image/jpg"
                 />
-                </Grid>
+              </Grid>
               <Grid item xs={12}>
                 <FormControlLabel
                   control={<Checkbox name="agree" color="primary" />}

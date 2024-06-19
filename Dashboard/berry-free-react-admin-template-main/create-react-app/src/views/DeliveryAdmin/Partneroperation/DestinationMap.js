@@ -1,15 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation } from 'react-router';
 
-const MapWithDirections = () => {
+const DestinationMap = () => {
+
   const [currentLocation, setCurrentLocation] = useState(null);
   const [destination, setDestination] = useState(null);
-  const [askedForPermission, setAskedForPermission] = useState(false);
   const location = useLocation();
 
   // Get user's current location
   useEffect(() => {
-    if (!askedForPermission && navigator.geolocation) {
+    if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
         position => {
           setCurrentLocation({
@@ -21,17 +21,16 @@ const MapWithDirections = () => {
           console.error('Error getting current location', error);
         }
       );
-      setAskedForPermission(true); // Set askedForPermission to true after attempting to get location
-    } else if (!navigator.geolocation) {
+    } else {
       console.error('Geolocation is not supported by this browser.');
     }
-  }, [askedForPermission]);
+  }, []);
 
   // Extract destination coordinates from URL
   useEffect(() => {
     const params = new URLSearchParams(location.search);
-    const tolat = parseFloat(params.get('fromlat')); // Assuming fromlat in URL is the destination latitude
-    const tolon = parseFloat(params.get('fromlon')); // Assuming fromlon in URL is the destination longitude
+    const tolat = parseFloat(params.get('tolat')); // Assuming fromlat in URL is the destination latitude
+    const tolon = parseFloat(params.get('tolon')); // Assuming fromlon in URL is the destination longitude
 
     if (tolat && tolon) {
       setDestination({ lat: tolat, lon: tolon });
@@ -53,8 +52,8 @@ const MapWithDirections = () => {
       });
 
       const directionsService = new window.google.maps.DirectionsService();
-      const directionsRenderer = new window.google.maps.DirectionsRenderer();
-      directionsRenderer.setMap(map);
+      const renderer = new window.google.maps.DirectionsRenderer();
+      renderer.setMap(map);
 
       const origin = new window.google.maps.LatLng(currentLocation.lat, currentLocation.lon);
       const dest = new window.google.maps.LatLng(destination.lat, destination.lon);
@@ -79,7 +78,7 @@ const MapWithDirections = () => {
         },
         (result, status) => {
           if (status === window.google.maps.DirectionsStatus.OK) {
-            directionsRenderer.setDirections(result);
+            renderer.setDirections(result);
           } else {
             console.error(`Directions request failed due to ${status}`);
           }
@@ -108,4 +107,4 @@ const MapWithDirections = () => {
   );
 };
 
-export default MapWithDirections;
+export default DestinationMap;

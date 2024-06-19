@@ -48,6 +48,7 @@ DeliveryRouter.post('/deliveryreg', async (req, res) => {
                 user_name: req.body.user_name,
                 password: hashedPassword,
                 role: '0',
+                district:req.body.district,
             };
             const result = await LoginDb(log).save();
 
@@ -65,9 +66,11 @@ DeliveryRouter.post('/deliveryreg', async (req, res) => {
                 address: req.body.address,
                 license_number: req.body.license_number,
                 user_name: req.body.user_name,
+                zipcode: req.body.zipcode,
                 state:req.body.state,
                 district:req.body.district,
                 password: hashedPassword,
+                location: JSON.parse(req.body.location),
                 license_image: `${req.files['license_image'][0].filename}`,
                 aadhar_image: `${req.files['aadhar_image'][0].filename}`,
                 user_image: `${req.files['user_image'][0].filename}`,

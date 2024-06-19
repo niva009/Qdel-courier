@@ -27,6 +27,7 @@ LoginRouter.post('/', async (req, res) => {
       	userId: oldUser._id,
       	userRole: oldUser.role,
       	userName: oldUser.user_name,
+		district: oldUser.district? oldUser.district:"",
     	},
     	'secret_this_should_be_longer',
     	{ expiresIn: '1h' }

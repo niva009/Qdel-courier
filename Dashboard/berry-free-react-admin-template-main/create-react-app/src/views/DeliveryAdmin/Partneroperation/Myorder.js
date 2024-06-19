@@ -3,95 +3,107 @@ import { MDBTable, MDBTableHead, MDBTableBody } from 'mdb-react-ui-kit';
 import axios from 'axios';
 import Dropdown from 'react-bootstrap/Dropdown';
 import { useNavigate } from 'react-router-dom';
+import {jwtDecode} from 'jwt-decode';
+import { AwesomeButton } from 'react-awesome-button';
+import 'react-awesome-button/dist/styles.css';
 
 export default function DeliveryMyorder() {
   const [data, setData] = useState([]);
+  const [statusMap, setStatusMap] = useState({});
   const navigate = useNavigate();
 
-  const handleTrack = (_id) => {
-    navigate(`/map/${_id}`);
-    console.log("Tracking item with ID:", _id);
-  };
+  const token = localStorage.getItem('token');
+  let district = '';
+  let userId = '';
+
+  if (token) {
+    try {
+      const decoded = jwtDecode(token);
+      district = decoded.district;
+      userId = decoded.userId;
+    } catch (error) {
+      console.error('Error decoding token:', error);
+    }
+  }
 
   useEffect(() => {
-    axios.get('http://localhost:3001/api/courier?status=approved')
-      .then((response) => {
-        const filteredData = response.data.data.filter(item => item.status === 'approved');
-        setData(filteredData);
-        console.log(filteredData);
-      })
-      .catch((err) => {
-        console.log(err, 'data getting error');
-      });
-  }, []);
+    if (district) {
+      axios.get(`http://localhost:3001/api/deliveryWindow/${district}`)
+        .then((response) => {
+          const filteredData = response.data.data.filter(item => item.pickup && item.pickup.Invoice && item.pickup.Invoice.collectedBy === userId);
+          setData(filteredData);
 
-  const handleOrderCullected = (id) => {
-    console.log("Order Cullected with ID:", id);
-    axios.put(`http://localhost:3001/api/deliverystatus/${id}`)
-      .then((response) => {
-        console.log('Order collected successfully', response);
-      })
-      .catch((error) => {
-        console.log(error, 'error');
-      });
-  };
+          // Initialize the statusMap with current status values
+          const initialStatusMap = {};
+          filteredData.forEach(item => {
+            initialStatusMap[item.pickup._id] = item.pickup.Invoice.status || 'Change Status';
+          });
+          setStatusMap(initialStatusMap);
+        })
+        .catch((err) => {
+          console.log(err, 'data getting error');
+        });
+    }
+  }, [district, userId]);
 
-  const handleNearestLocation = (id) => {
-    console.log("Order Cullected with ID:", id);
-    axios.put(`http://localhost:3001/api/deliverystatus/${id}`)
+  const handleOrderCollected = (id, status) => {
+    axios.put(`http://localhost:3001/api/status-updation/${id}`, {
+      userId: userId,
+      status: status,
+    })
       .then((response) => {
-        console.log('Order handle nearestLocation ', response);
-      })
-      .catch((error) => {
-        console.log(error, 'error');
-      });
-  };
+        console.log('Order status updated successfully', response);
 
-  const handleDelivered = (id) => {
-    axios.put(`http://localhost:3001/api/deliverystatus/delivered/${id}`)
-      .then((response) => {
-        console.log('Order delivered successfully', response);
+        // Update the statusMap with the new status
+        setStatusMap(prevStatusMap => ({
+          ...prevStatusMap,
+          [id]: status
+        }));
       })
       .catch((error) => {
         console.log(error, 'error');
       });
   };
-
-
 
   return (
     <MDBTable align='middle'>
       <MDBTableHead>
         <tr>
           <th scope='col'>No</th>
-          <th scope='col'>From Address</th>
-          <th scope='col'>To Address</th>
-          <th scope='col'>Status</th>
-          <th scope='col'>Track</th>
+          <th scope='col'>Track to Pickup Address</th>
+          <th scope='col'>Pickup Address</th>
+          <th scope='col'>Track to Delivery Address</th>
+          <th scope='col'>Delivery Address</th>
+          <th scope='col'>Status Update</th>
         </tr>
       </MDBTableHead>
       <MDBTableBody>
         {data.map((item, index) => (
           <tr key={index}>
             <td>{index + 1}</td>
-            <td>{item.formData.from_name},{item.formData.from_address},{item.formData.from_zipcode},{item.formData.from_city}</td>
-            <td>{item.formData.to_name},{item.formData.to_address},{item.formData.to_zipcode},{item.formData.to_city}</td>
+            <td>
+              <AwesomeButton onPress={() => navigate(`/map/${item._id}?fromlat=${item.pickup.Location.fromlat}&fromlon=${item.pickup.Location.fromlon}`)}>Track to Pickup Point</AwesomeButton>
+            </td>
+            <td>{item.pickup.from_name},{item.pickup.from_address},{item.pickup.from_zipcode},{item.pickup.from_district}</td>
+            <td>
+              <AwesomeButton type='danger' onPress={() => {
+                const [lon, lat] = item.nearestWarehouse.location.coordinates;
+                navigate(`/DestinationMap?tolat=${lat}&tolon=${lon}`);
+              }}>Track to Delivery Point</AwesomeButton>
+            </td>
+            <td>{item.nearestWarehouse.name},{item.nearestWarehouse.address},{item.nearestWarehouse.zipcode},{item.nearestWarehouse.district}</td>
             <td>
               <Dropdown>
                 <Dropdown.Toggle variant="success" id="dropdown-basic">
-                  Change Status
+                  {statusMap[item.pickup._id] === 'collected' ? 'Change Status' : statusMap[item.pickup._id]}
                 </Dropdown.Toggle>
                 <Dropdown.Menu>
-                  <Dropdown.Item onClick={() => handleOrderCullected(item._id)}>Order Collected</Dropdown.Item>
-                  <Dropdown.Item href="#/action-2"  onClick={ () => handleNearestLocation(item._id)} >Handle to Nearest Location</Dropdown.Item>
-                  <Dropdown.Item href="#/action-2" onClick={ () => handleDelivered(item._id)} >Order Delivered</Dropdown.Item>
+                  <Dropdown.Item onClick={() => handleOrderCollected(item.pickup._id, "Order Picked")}>Order Picked</Dropdown.Item>
+                  <Dropdown.Item onClick={() => handleOrderCollected(item.pickup._id, "Handle to Nearest Location")}>Handle to Nearest Location</Dropdown.Item>
+                  <Dropdown.Item onClick={() => handleOrderCollected(item.pickup._id, "Product Delivered")}>Product Delivered</Dropdown.Item>
                 </Dropdown.Menu>
               </Dropdown>
             </td>
-            <td>
-              <button type="button" className="btn btn-primary btn-rounded" onClick={() => handleTrack(item._id)}>Track Here</button>
-            </td>
-            <td></td>
           </tr>
         ))}
       </MDBTableBody>
