@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Document, Page, View, StyleSheet, PDFViewer, Image ,Text} from '@react-pdf/renderer';
+import { Document, Page, View, StyleSheet, PDFViewer, Image, Text } from '@react-pdf/renderer';
 import { useParams } from 'react-router-dom';
 import QRCode from 'qrcode';
 
@@ -21,7 +21,7 @@ const styles = StyleSheet.create({
   heading: {
     fontSize: 30,
     marginBottom: 10,
-    fontWeight: 'bold', // Set fontWeight to 'bold'
+    fontWeight: 'bold',
     color: 'orange',
   },
   table: {
@@ -43,11 +43,11 @@ const styles = StyleSheet.create({
   },
   tableHeader: {
     fontWeight: 'bold',
-    color:'black',
+    color: 'black',
     fontSize: 15,
   },
-  TableData:{
-    fontSize:12,
+  TableData: {
+    fontSize: 12,
   },
   addressContainer: {
     flexWrap: 'wrap',
@@ -75,18 +75,7 @@ const BusinessInvoicePdf = () => {
 
   useEffect(() => {
     if (data) {
-      const qrData = JSON.stringify({
-        "From Name": data.from_name,
-        "From Address": data.from_address,
-        "From District": data.from_district || '',
-        "From State": data.from_state || '',
-        "From Phone Number": data.from_phone_number,
-        "To Name": data.to_name,
-        "To Address": data.to_address,
-        "To District": data.to_district || '',
-        "To State": data.to_state || '',
-        "To Phone Number": data.to_phone_number,
-      });
+      const qrData = `http://localhost:3002/qdel/delivery/statusUpdation/${data._id}`;
 
       // Generate QR code as base64
       QRCode.toDataURL(qrData, { width: 150 })
@@ -107,39 +96,39 @@ const BusinessInvoicePdf = () => {
     <div>
       <PDFViewer style={{ width: '100%', height: '800px' }}>
         <Document>
-          <Page size="A5" style={styles.page}>  
+          <Page size="A5" style={styles.page}>
             <View style={styles.section}>
-            <View>
-            <Text style={styles.heading}>Qdel Courier Service Limited</Text>
-            </View>
+              <View>
+                <Text style={styles.heading}>Qdel Courier Service Limited</Text>
+              </View>
               <View style={styles.qrcode}>
-                <Image style={{ width: 250, }} src={qrCodeBase64} />
+                {qrCodeBase64 && <Image style={{ width: 250 }} src={qrCodeBase64} />}
               </View>
               <View style={styles.table}>
-  <View style={styles.tableRow}>
-    <View style={styles.tableCell}>
-      <Text style={styles.tableHeader}>Billing Address:</Text>
-      <View style={styles.addressContainer}>
-      <Text style={styles.TableData}>{data.from_address}</Text>
-      <Text style={styles.TableData}>{data.from_zipcode}</Text>
-      <Text style={styles.TableData}>{data.from_city}</Text>
-      <Text style={styles.TableData}>{data.from_district || ''}</Text>
-      <Text style={styles.TableData}>{data.from_state || ''}</Text>
-      </View>
-    </View>
-    <View style={styles.tableCell}>
-      <Text style={styles.tableHeader}>Shipping Address:</Text>
-      <View style={styles.addressContainer}>
-      <Text style={styles.TableData}>{data.to_address}</Text>
-      <Text style={styles.TableData}>{data.to_zipcode}</Text>
-      <Text style={styles.TableData}>{data.to_city}</Text>
-      <Text style={styles.TableData}>{data.to_district || '' }</Text>
-      <Text style={styles.TableData}>{data.to_state || ''}</Text>
-      </View>
-    </View>
-  </View>
-</View>
- </View>
+                <View style={styles.tableRow}>
+                  <View style={styles.tableCell}>
+                    <Text style={styles.tableHeader}>Billing Address:</Text>
+                    <View style={styles.addressContainer}>
+                      <Text style={styles.TableData}>{data.from_address}</Text>
+                      <Text style={styles.TableData}>{data.from_zipcode}</Text>
+                      <Text style={styles.TableData}>{data.from_city}</Text>
+                      <Text style={styles.TableData}>{data.from_district || ''}</Text>
+                      <Text style={styles.TableData}>{data.from_state || ''}</Text>
+                    </View>
+                  </View>
+                  <View style={styles.tableCell}>
+                    <Text style={styles.tableHeader}>Shipping Address:</Text>
+                    <View style={styles.addressContainer}>
+                      <Text style={styles.TableData}>{data.to_address}</Text>
+                      <Text style={styles.TableData}>{data.to_zipcode}</Text>
+                      <Text style={styles.TableData}>{data.to_city}</Text>
+                      <Text style={styles.TableData}>{data.to_district || ''}</Text>
+                      <Text style={styles.TableData}>{data.to_state || ''}</Text>
+                    </View>
+                  </View>
+                </View>
+              </View>
+            </View>
           </Page>
         </Document>
       </PDFViewer>

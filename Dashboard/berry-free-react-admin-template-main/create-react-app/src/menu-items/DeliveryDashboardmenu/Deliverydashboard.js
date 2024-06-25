@@ -37,7 +37,7 @@ const Deliverydashboard = {
           id: 'order history',
           title: 'Order History',
           type: 'item',
-          url: '/departner/daproved',
+          url: 'delivery/deliveryHistory',
           target: true
         },
       ]

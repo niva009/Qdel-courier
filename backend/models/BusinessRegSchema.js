@@ -7,7 +7,7 @@ const BusinessRegSchema = new Schema({
     phone_number: { type: String, require: true },
     address: { type: String, require: true },
     aadhar_number: { type: String, require: true },
-    email_address: { type: String, require: true },
+    email: { type: String, require: true },
     password: { type: String, require: true },
     aadhar_image: { type: String, require: true },
     state: { type: String, require: true },

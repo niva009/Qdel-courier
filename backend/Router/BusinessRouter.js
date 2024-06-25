@@ -651,4 +651,40 @@ if(
 })
 
 
+
+//// to store delivery partner distance and time///////////
+
+BusinessRouter.put('/distance-price/:id', async (req, res) => {
+    const id = req.params.id;
+    const { deliveryDistance, deliveryPrice } = req.body;
+  
+    console.log(id, "id information");
+  
+    if (!id) {
+      return res.status(404).json({ message: "id not present", success: false, error: true });
+    }
+  
+    try {
+      const updatedBusiness = await BusinessDb.findByIdAndUpdate(
+        id,
+        {
+          $set: {
+            'Location.deliveryDistance': deliveryDistance,
+            'Location.deliveryPrice': deliveryPrice,
+          }
+        },
+        { new: true }
+      );
+  
+      if (!updatedBusiness) {
+        return res.status(404).json({ message: "Business not found", success: false, error: true });
+      }
+  
+      res.json({ message: "Distance and price updated successfully", success: true, data: updatedBusiness });
+    } catch (error) {
+      console.error('Error updating distance and price:', error);
+      res.status(500).json({ message: "Internal Server Error", success: false, error: true });
+    }
+  });
+
 module.exports = BusinessRouter;

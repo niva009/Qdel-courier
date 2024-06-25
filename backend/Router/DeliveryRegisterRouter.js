@@ -211,6 +211,31 @@ DeliveryRouter.put('/rejectDeliveryRole/:id', async (req, res) => {
     }
 });
 
+DeliveryRouter.get('/deliverypartnerDetails/:id', async(req,res) =>{
+
+    try{
+        const id = req.params.id;
+        console.log(id);
+
+        if(!id){
+            return res.status(404).json({ message: "ID not present", success: false,})
+        }
+
+        const result = await DeliveryDb.findById({_id:id})
+
+        if(result){
+
+            res.status(200).json({ success:true,error:false, data:result,message:"data found successfully"})
+        }
+        else{
+            res.status(400).json({ success:false,error:true,message:"data not found"})
+        }
+
+    } catch(error){
+        res.status(500).json({ message: "Internal server error", error: error.message,})
+    }
+})
+
 
 
 

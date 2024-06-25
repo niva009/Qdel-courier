@@ -11,37 +11,33 @@ const DorderTaking = Loadable(lazy(() => import('views/DeliveryAdmin/Partneroper
 const Myorder = Loadable(lazy(() => import('views/DeliveryAdmin/Partneroperation/Myorder')));
 const Map = Loadable(lazy(() => import('views/DeliveryAdmin/Partneroperation/Map')));
 
-
-
 // ==============================|| AUTHENTICATION ROUTING ||============================== //
 
-const DeliveryAdminRotes = {
+const DeliveryAdminRoutes = {
   path: '/',
   element: <MinimalLayout />,
   children: [
     {
       path: '/departner/daprovelist',
-      element: < DeliveryPartnerlist/>
+      element: <DeliveryPartnerlist />
     },
     {
       path: '/departner/daproved',
       element: <Daprovel />
     },
     {
-      path: '/delivery/approval',///////delivery url for DELIVERY ADMIN////////////////////////////
+      path: '/delivery/approval', // delivery url for DELIVERY ADMIN
       element: <DorderTaking />
     },
     {
-      path: '/delivery/myorder',///////delivery url for DELIVERY ADMIN////////////////////////////
+      path: '/delivery/myorder', // delivery url for DELIVERY ADMIN
       element: <Myorder />
     },
     {
-      path: '/map/:id',////////////////Show Map ////////////////////////////////////////
+      path: '/map/:id', // Show Map
       element: <Map />
     },
-  
-   
   ]
 };
 
-export default DeliveryAdminRotes;
+export default DeliveryAdminRoutes;

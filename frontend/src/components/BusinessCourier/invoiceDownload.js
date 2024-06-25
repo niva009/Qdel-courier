@@ -3,6 +3,7 @@ import { Box, Container, Typography, Button, Stack } from '@mui/material';
 import { FaDownload, FaFileDownload } from "react-icons/fa";
 import NavbarOne from '../NavbarOne';
 import { useNavigate } from 'react-router-dom';
+import { SlArrowLeftCircle } from "react-icons/sl";
 
 const InvoiceDownload = () => {
   const [formId, setFormId] = useState("");
@@ -22,6 +23,10 @@ const InvoiceDownload = () => {
       console.error("No data found in localStorage for key 'FormId'");
     }
   }, []);
+
+  function Navigate(){
+    navigate('/');
+  }
 
   return (
     <>
@@ -120,6 +125,12 @@ const InvoiceDownload = () => {
                   </Button>
               </Stack>
             </Box>
+            <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center',height:'100px' }}>
+  <button onClick={Navigate} style={{ textAlign: 'center', border: 'none', backgroundColor: 'blue', padding: '10px 20px', color: 'white', display: 'flex', alignItems: 'center', gap: '8px' }}>
+    <SlArrowLeftCircle />
+    Back To Home Page
+  </button>
+</div>
           </Container>
         </Box>
       </Box>

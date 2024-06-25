@@ -14,7 +14,7 @@ export default function BasicTable() {
   const [data, setData] = useState([]);
 
   useEffect(() => {
-    axios.get('http://localhost:3001/api/getallData')
+    axios.get('http://localhost:3001/api/getallData/getallData')
       .then((response) => {
         setData(response.data.data);
       })
@@ -23,13 +23,50 @@ export default function BasicTable() {
       });
   }, []);
 
+  const getPaymentStatusStyle = (status) => {
+    if (status === 'payment success') {
+      return { color: 'green', fontWeight: 'bolder' };
+    } else if (status === 'payment fail') {
+      return { color: 'red', fontWeight: 'bolder' };
+    } else if (status === 'payment pending') {
+      return { color: 'yellow', fontWeight: 'bolder' };
+    } else {
+      return {};
+    }
+  };
+
+  const getStatusStyle = (status) => {
+    const normalizedStatus = status.toLowerCase(); // Normalize the status text for consistent comparison
+    
+    switch (normalizedStatus) {
+      case 'order created':
+        return { backgroundColor: '#0a8f3f', color: 'white', fontWeight: 'bolder' };
+      case 'order picked':
+        return { backgroundColor: '#1906c2', color: 'white', fontWeight: 'bolder' };
+      case 'handle to nearest location':
+        return { backgroundColor: '#f7dc6f', color: 'black', fontWeight: 'bolder' };
+      case 'order shipped':
+        return { backgroundColor: 'black', color: 'white', fontWeight: 'bolder' };
+      case 'product delivered':
+        return { backgroundColor: 'orange', color: 'white', fontWeight: 'bolder' };
+      default:
+        return {};
+    }
+  };
+  
   console.log(data, "data information");
+
+  const buttonStyle = {
+    width: '140px',  // Define button width
+    height: '40px'  // Define button height
+  };
 
   return (
     <TableContainer component={Paper}>
       <Table sx={{ minWidth: 650 }} aria-label="simple table">
         <TableHead>
           <TableRow>
+            <TableCell style={{ marginLeft: '10px' }}>No</TableCell>
             <TableCell>Invoice Id</TableCell>
             <TableCell align="right">Invoice Date</TableCell>
             <TableCell align="right">Total Amount</TableCell>
@@ -42,14 +79,21 @@ export default function BasicTable() {
         <TableBody>
           {data.map((item, index) => (
             <TableRow key={index}>
+              <TableCell>{index + 1}</TableCell>
               <TableCell>{item.Invoice?.invoiceId}</TableCell>
               <TableCell align="right">{item.Invoice?.invoiceDate}</TableCell>
-              <TableCell align="right">{item.Invoice?.totalPrice}</TableCell>
-              <TableCell align="right">{item.Invoice?.paymentStatus}</TableCell>
-              <TableCell align="right">{item.Invoice?.status}</TableCell>
+              <TableCell align="right">{item.Invoice?.totalPrice} Rs</TableCell>
+              <TableCell align="right" style={getPaymentStatusStyle(item.Invoice?.paymentStatus)}>
+                {item.Invoice?.paymentStatus}
+              </TableCell>
+              <TableCell align="right">
+                <Button variant="contained" style={{ ...getStatusStyle(item.Invoice?.status), ...buttonStyle }}>
+                  {item.Invoice?.status}
+                </Button>
+              </TableCell>
               <TableCell align="right">{item.Invoice?.choosedPlane}</TableCell>
               <TableCell align="right">
-                <Button variant="contained">View</Button>
+                <Button variant="contained" style={buttonStyle}>View</Button>
               </TableCell>
             </TableRow>
           ))}

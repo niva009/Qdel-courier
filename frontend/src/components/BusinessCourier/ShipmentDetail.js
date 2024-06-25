@@ -384,17 +384,58 @@ const ShipmentDetails = () => {
         if (formType === 'Document') {
             return (
               <div>
-              <form>
-                <div className="form-group">
-                  <Box sx={{ p: 2, border: '1px solid #ccc', borderRadius: '4px',marginTop:'30px', backgroundColor: '#f5f5f5' }}>
-              
-          <TextField fullWidth label="weight in gram" id="fullWidth" name='weight' /> <br/><br/>
-          <TextField fullWidth label="Description"  rows={'6'} multiline id="fullWidth" name='WEIGHT' /> <br/><br/>
-        
-      </Box>
-      
-                </div>
-              </form>
+                 <form onsubmit ={handleSubmit}>
+        <div className="form-group">
+          <Box sx={{ p: 2, border: '1px solid #ccc', borderRadius: '4px', marginTop: '30px', backgroundColor: '#f5f5f5' }}>
+            <TextField fullWidth label="weight in gram" id="weight" name='weight' /><br /><br />
+            <TextField fullWidth label="Description" rows={6} multiline id="description" name='description' /><br /><br />
+
+            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
+              <Typography variant="subtitle1" component="div">
+                Measurement (cm)
+              </Typography>
+              <Tooltip title="Enter the dimensions in centimeters">
+                <IconButton size="small">
+                  <InfoIcon fontSize="small" />
+                </IconButton>
+              </Tooltip>
+            </Box>
+            <Box sx={{ display: 'flex', gap: 2 }}>
+              <TextField
+                label="Length"
+                variant="outlined"
+                size="small"
+                error={!!error.length}
+                helperText={error.length ? "Length should be a number and below 300 cm" : ""}
+                name='length'
+                sx={{ flex: 1 }}
+                onChange={handleChange}
+              />
+              <TextField
+                label="Width"
+                variant="outlined"
+                size="small"
+                error={!!error.width}
+                helperText={error.width ? "Width should be a number and below 300 cm" : ""}
+                name='width'
+                sx={{ flex: 1 }}
+                onChange={handleChange}
+              />
+              <TextField
+                label="Height"
+                variant="outlined"
+                size="small"
+                error={!!error.height}
+                helperText={error.height ? "Height should be a number and below 300 cm" : ""}
+                name='height'
+                sx={{ flex: 1 }}
+                onChange={handleChange}
+              />
+            </Box>
+    <button  style={{ padding:'10px 40px', marginTop: "20px", marginBottom:"30px", border:'none',background:'orange'}} type='submit'>next</button>
+          </Box>
+        </div>
+      </form>
             </div>
             );
         } else if (formType === 'Packages') {
@@ -480,7 +521,7 @@ const ShipmentDetails = () => {
             </Box><br/>
     <TextField onChange={handleChange} fullWidth label="product estimated total price in Rs"  placeholder=" 200 rs" id="fullWidth" name='estimated_price'   /> <br/><br/>
     <TextField onChange={handleChange} fullWidth label="Product Description"  rows={'6'} multiline id="fullWidth" name='description' /> <br/><br/>
-    <button type='submit'>next</button>
+    <button  style={{ padding:'10px 40px', border:'none',background:'orange'}} type='submit'>next</button>
   
 
 

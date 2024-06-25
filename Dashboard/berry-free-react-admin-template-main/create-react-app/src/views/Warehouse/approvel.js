@@ -3,9 +3,13 @@ import {   MDBTable, MDBTableHead, MDBTableBody } from 'mdb-react-ui-kit';
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 import Dropdown from 'react-bootstrap/Dropdown';
+import { useNavigate } from 'react-router';
 
 
 export default function WarehouseRequest() {
+
+  const navigate =useNavigate();
+
 
 
     const [ data, setData] = useState([]);
@@ -40,6 +44,12 @@ export default function WarehouseRequest() {
         });
     };
 
+    const submitId = (id) =>{
+      console.log(id);
+      navigate(`/warehouse/warehouse-information/${id}`);
+
+  };
+
 
 
   return (
@@ -69,7 +79,7 @@ export default function WarehouseRequest() {
                         <td>{item.state}</td>
                         <td>{item.district}</td>
                         <td>
-                        <button type="button" className="btn btn-primary btn-rounded" >view</button>
+                        <button type="button" onClick={() =>submitId(item._id)} className="btn btn-primary btn-rounded" >view</button>
                         </td>
                         <td>
                         <Dropdown>

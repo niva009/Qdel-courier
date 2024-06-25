@@ -17,7 +17,10 @@ const LocationDataSchema = new Schema({
     tolat: { type: String, require: true },
     tolon: { type: String, require: true },
     Distance: { type: String, require: true },
-    Duration: { type: String, require: true }
+    Duration: { type: String, require: true },
+    deliveryDistance: { type: String, require:true},
+    deliveryPrice: { type: String, require:true},
+
 });
 
 const BillingDetails = new Schema({

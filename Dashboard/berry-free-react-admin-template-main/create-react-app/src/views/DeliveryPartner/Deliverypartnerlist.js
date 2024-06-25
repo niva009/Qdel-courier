@@ -3,9 +3,12 @@ import { MDBTable, MDBTableHead, MDBTableBody } from 'mdb-react-ui-kit';
 import axios from 'axios';
 import Dropdown from 'react-bootstrap/Dropdown';
 import emailjs from 'emailjs-com';
+import { useNavigate} from 'react-router';
 
 export default function Deliverypartnerlist() {
     const [data, setData] = useState([]);
+
+    const navigate = useNavigate();
 
     useEffect(() => {
         axios.get('http://localhost:3001/api/deliverlist')
@@ -61,6 +64,12 @@ export default function Deliverypartnerlist() {
             });
     };
 
+    const submitId = (id) =>{
+        console.log(id);
+        navigate(`/delivery/deliverydetails/${id}`);
+
+    };
+
     return (
         <MDBTable align='middle'>
             <MDBTableHead>
@@ -87,7 +96,7 @@ export default function Deliverypartnerlist() {
                         <td>{item.phone_number}</td>
                         <td>{item.address}</td>
                         <td>
-                            <button type="button" className="btn btn-primary btn-rounded">View</button>
+                            <button type="button" onClick={() =>submitId(item._id)} className="btn btn-primary btn-rounded">View</button>
                         </td>
                         <td>
                             <Dropdown>

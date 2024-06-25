@@ -2,9 +2,12 @@ import React from 'react';
 import {   MDBTable, MDBTableHead, MDBTableBody } from 'mdb-react-ui-kit';
 import { useState, useEffect } from 'react';
 import axios from 'axios'
+import { useNavigate } from 'react-router';
 
 
 export default function Deliverypartnerlist() {
+
+  const navigate =useNavigate();
 
     const [ data, setData] = useState([]);
 
@@ -19,6 +22,12 @@ export default function Deliverypartnerlist() {
             console.log(err, 'data getting error');
           });
       }, []);
+      
+      const submitId = (id) =>{
+        console.log(id);
+        navigate(`/delivery/deliverydetails/${id}`);
+
+    };
    
 
   return (
@@ -46,7 +55,7 @@ export default function Deliverypartnerlist() {
                         <td>{item.phone_number}</td>
                         <td>{item.address}</td>
                         <td>
-                        <button type="button" className="btn btn-primary btn-rounded" >view</button>
+                        <button type="button" onClick={() =>submitId(item._id)} className="btn btn-primary btn-rounded" >view</button>
                         </td>
                         <td>
  </td>

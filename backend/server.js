@@ -124,6 +124,7 @@ App.use('/api/', DeliveryPartnerWindow);
 App.use('/api/userapproval/', DeliveryPartnerWindow);
 App.use('/api/orderHistory/', DeliveryPartnerWindow);
 App.use('/api/status-updation/', DeliveryPartnerWindow);
+App.use( '/api/distance-price/', BusinessRouter);
 App.listen(port, () => {
     console.log(`server running on port ${port}`);
 });

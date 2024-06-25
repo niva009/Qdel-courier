@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import './delivery.css';
 import axios from 'axios';
-import {jwtDecode} from 'jwt-decode'; // Correct the import for jwt-decode
+import {jwtDecode} from 'jwt-decode'; // Correct import for jwt-decode
 
 const RouteInfo = () => {
   const [data, setData] = useState([]);
@@ -24,20 +24,28 @@ const RouteInfo = () => {
     if (district) {
       axios.get(`http://localhost:3001/api/deliveryWindow/${district}`)
         .then(response => {
+          console.log('API Response:', response.data); // Log API response
           setData(response.data.data);
         })
         .catch(error => {
-          console.log(error, 'error');
+          console.log('Error fetching data:', error);
         });
     }
   }, [district]);
 
-  console.log(data, "data from kannur");
+  console.log('Fetched Data:', data); // Log fetched data
 
-  const handleApprove = async (id) => {
+  const handleApprove = async (item) => {
     try {
-      const response = await axios.put(`http://localhost:3001/api/userapproval/userapproval/${id}`,{
-        userId: userId
+      // Update delivery distance and time
+      await axios.put(`http://localhost:3001/api/distance-price/${item.pickup._id}`, {
+        deliveryDistance: item.distance,
+        deliveryPrice: item.price,
+      });
+
+      // Update user approval
+      const response = await axios.put(`http://localhost:3001/api/userapproval/userapproval/${item.pickup._id}`, {
+        userId: userId,
       });
       console.log(response.data); // Assuming your backend returns the updated data
       window.location.reload();
@@ -45,8 +53,6 @@ const RouteInfo = () => {
       console.error('Error approving:', error);
     }
   };
-
-  console.log('data in approval page', data);
 
   return (
     <div>
@@ -65,7 +71,6 @@ const RouteInfo = () => {
             <div className="line">
               <div className="distance">{item.distance ? `${item.distance.toFixed(2)} km` : ''}</div>
               <div className="time">{item.price ? ` ${item.price} Rs` : ''}</div>
-
             </div>
           </div>
           <div className="route-info-right">
@@ -82,7 +87,7 @@ const RouteInfo = () => {
             )}
           </div>
           <div className="button-group">
-            <button className="approve-button" onClick={() => handleApprove(item.pickup._id)}>Accept</button>
+            <button className="approve-button" onClick={() => handleApprove(item)}>Accept</button>
           </div>
         </div>
       ))}

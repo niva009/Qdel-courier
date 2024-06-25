@@ -414,6 +414,13 @@ console.log(toLocationInfo,"to state");
 
       const handleSubmit = (e) => {
         e.preventDefault();
+
+        if(!form.from_name || !form.from_phone_number  || !form.from_address|| !form.from_state|| !form.from_district|| !form.from_zipcode
+          || !form.to_name || !form.to_address || !form.to_phone_number || !form.to_state || !form.to_district || !form.to_zipcode || !form.from_name
+        ){
+          setError("please fill out all field");
+          return;
+        }
     
         axios.post('http://localhost:3001/api/getAllData/business', form)
           .then(response => {

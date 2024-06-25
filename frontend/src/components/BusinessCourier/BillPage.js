@@ -110,57 +110,59 @@ export default function Bill() {
 
   const handlePayment = async () => {
     try {
-      // Your backend should create an order and return the order_id
-      const response = await fetch(`http://localhost:3001/api/create-order/${data}`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
+        const response = await fetch(`http://localhost:3001/api/create-order/${data}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
+
+        if (!response.ok) {
+            const errorText = await response.text();
+            console.error('Failed to create order:', errorText);
+            throw new Error('Failed to create order');
         }
-      });
-  
-      if (!response.ok) {
-        throw new Error('Failed to create order');
-      }
-  
-      const order = await response.json();
-  
-      // Ensure order object has the correct amount
-      if (!order.amount || typeof order.amount !== 'number' || order.amount < 100) {
-        throw new Error('Invalid order amount received');
-      }
-  
-      const options = {
-        key: 'rzp_test_QUfWalFEmI7V4R', // Enter the Key ID generated from the Dashboard
-        amount: order.amount, // Amount is in currency subunits (e.g., paise for INR)
-        currency: order.currency,
-        name: 'Your Company Name',
-        description: 'Test Transaction',
-        order_id: order.id,
-        handler: function (response) {
-          // This function handles the payment success response
-          alert(`Payment successful! Payment ID: ${response.razorpay_payment_id}`);
-          navigate('/downloadinvoice');
-        },
-        prefill: {
-          name: 'Qdel india private limited',
-          email: 'qdelindia@gmail.com',
-          contact: '9999999999'
-        },
-        notes: {
-          address: 'Corporate Office'
-        },
-        theme: {
-          color: '#3399cc'
+
+        const order = await response.json();
+
+        // Ensure order object has the correct amount
+        if (!order.amount || typeof order.amount !== 'number' || order.amount < 100) {
+            throw new Error('Invalid order amount received');
         }
-      };
-  
-      const rzp = new window.Razorpay(options);
-      rzp.open();
+
+        const options = {
+            key: 'rzp_test_QUfWalFEmI7V4R', // Enter the Key ID generated from the Dashboard
+            amount: order.amount, // Amount is in currency subunits (e.g., paise for INR)
+            currency: order.currency,
+            name: 'Qdel Courier Service Compony',
+            description: 'qdel',
+            order_id: order.id,
+            handler: function (response) {
+                // This function handles the payment success response
+                alert(`Payment successful! Payment ID: ${response.razorpay_payment_id}`);
+                navigate('/downloadinvoice');
+            },
+            prefill: {
+                name: 'Qdel india private limited',
+                email: 'qdelindia@gmail.com',
+                contact: '9999999999'
+            },
+            notes: {
+                address: 'Corporate Office'
+            },
+            theme: {
+                color: '#3399cc'
+            }
+        };
+
+        const rzp = new window.Razorpay(options);
+        rzp.open();
     } catch (error) {
-      console.error('Error initiating payment:', error);
-      alert('Something went wrong. Please try again.');
+        console.error('Error initiating payment:', error.message);
+        alert('Something went wrong. Please try again.');
     }
-  };
+};
+
   const serviceCharges = [
     { name: 'qdel service Charge', price: priceDetail.totalPrice},
     { name: 'SMS Charge', price: priceDetail.smsCharge },
@@ -168,7 +170,10 @@ export default function Bill() {
     { name: 'Pickup Charge', price: priceDetail.pickupCharge },
   ];
 
-  const totalAmount = serviceCharges.reduce((total, charge) => total + parseFloat(charge.price), 0);
+  const totalAmount = serviceCharges.reduce((total, charge) => {
+    const price = parseFloat(charge.price);
+    return isNaN(price) ? total : total + price;
+}, 0);
 
   const boxStyle = {
     backgroundColor: '#fff',

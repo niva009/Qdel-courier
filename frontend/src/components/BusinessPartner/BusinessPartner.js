@@ -163,16 +163,16 @@ function BusinessReg() {
       .then((response) => {
         console.log(response);
         toast.success("Your registration completed successfully. You will get an approval email from admin. Thank you!", {});
-        setTimeout = (() =>{
-          window.location.reload();
-        },3000)
+        // setTimeout = (() =>{
+        //   window.location.reload();
+        // },3000)
       })
       .catch((error) => {
         console.log(error, "something went wrong");
         toast.error("Registration failed", error);
-        setTimeout = (() =>{
-          window.location.reload();
-        },3000)
+        // setTimeout = (() =>{
+        //   window.location.reload();
+        // },3000)
       });
   };
   return (
